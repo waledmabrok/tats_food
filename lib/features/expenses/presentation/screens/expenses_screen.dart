@@ -22,7 +22,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   List<Expense> _expenses = [];
   bool _isLoading = true;
   DateTimeRange? _dateRange;
-  
+
   double get _totalExpenses => _expenses.fold(0, (sum, e) => sum + e.amount);
 
   @override
@@ -33,8 +33,13 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
 
   Future<void> _load() async {
     setState(() => _isLoading = true);
-    final expenses = await _repo.getAll(from: _dateRange?.start, to: _dateRange?.end);
-    if (mounted) setState(() { _expenses = expenses; _isLoading = false; });
+    final expenses =
+        await _repo.getAll(from: _dateRange?.start, to: _dateRange?.end);
+    if (mounted)
+      setState(() {
+        _expenses = expenses;
+        _isLoading = false;
+      });
   }
 
   @override
@@ -45,7 +50,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
         children: [
           // ─── شريط الفلتر والأدوات ──────────────────────────────────
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space16, vertical: AppDimensions.space12),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.space16,
+                vertical: AppDimensions.space12),
             decoration: const BoxDecoration(
               color: AppColors.surface,
               border: Border(bottom: BorderSide(color: AppColors.divider)),
@@ -55,41 +62,54 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                 OutlinedButton.icon(
                   onPressed: _pickDateRange,
                   icon: const Icon(Icons.date_range_outlined, size: 18),
-                  label: Text(_dateRange == null ? 'كل التواريخ'
-                      : '${_formatDate(_dateRange!.start)} — ${_formatDate(_dateRange!.end)}',
-                    style: AppTypography.bodySmall),
-                  style: OutlinedButton.styleFrom(minimumSize: const Size(0, 36)),
+                  label: Text(
+                      _dateRange == null
+                          ? 'كل التواريخ'
+                          : '${_formatDate(_dateRange!.start)} — ${_formatDate(_dateRange!.end)}',
+                      style: AppTypography.bodySmall),
+                  style:
+                      OutlinedButton.styleFrom(minimumSize: const Size(0, 36)),
                 ),
                 if (_dateRange != null) ...[
                   const SizedBox(width: 8),
                   IconButton(
                     icon: const Icon(Icons.clear, size: 18),
-                    onPressed: () { setState(() => _dateRange = null); _load(); },
+                    onPressed: () {
+                      setState(() => _dateRange = null);
+                      _load();
+                    },
                   ),
                 ],
                 const SizedBox(width: AppDimensions.space24),
-                
+
                 // الإجمالي
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: AppColors.errorLight,
                     borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                   ),
                   child: Row(
                     children: [
-                      Text('الإجمالي: ', style: AppTypography.bodySmall.copyWith(color: AppColors.error)),
-                      Text('${_totalExpenses.toStringAsFixed(2)} ${AppStrings.currency}', style: AppTypography.titleSmall.copyWith(color: AppColors.error)),
+                      Text('الإجمالي: ',
+                          style: AppTypography.bodySmall
+                              .copyWith(color: AppColors.error)),
+                      Text(
+                          '${_totalExpenses.toStringAsFixed(2)} ${AppStrings.currency}',
+                          style: AppTypography.titleSmall
+                              .copyWith(color: AppColors.error)),
                     ],
                   ),
                 ),
-                
+
                 const Spacer(),
                 ElevatedButton.icon(
                   onPressed: () => _showDialog(),
                   icon: const Icon(Icons.add_rounded),
                   label: const Text(AppStrings.expenseAddNew),
-                  style: ElevatedButton.styleFrom(minimumSize: const Size(0, 40)),
+                  style:
+                      ElevatedButton.styleFrom(minimumSize: const Size(0, 40)),
                 ),
               ],
             ),
@@ -112,10 +132,14 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                         child: Column(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space16, vertical: AppDimensions.space10),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: AppDimensions.space16,
+                                  vertical: AppDimensions.space10),
                               decoration: BoxDecoration(
                                 color: AppColors.surfaceVariant,
-                                borderRadius: const BorderRadius.vertical(top: Radius.circular(AppDimensions.radiusMd)),
+                                borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(
+                                        AppDimensions.radiusMd)),
                                 border: const Border(
                                   top: BorderSide(color: AppColors.border),
                                   left: BorderSide(color: AppColors.border),
@@ -136,14 +160,18 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                               child: Container(
                                 decoration: BoxDecoration(
                                   border: Border.all(color: AppColors.border),
-                                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(AppDimensions.radiusMd)),
+                                  borderRadius: const BorderRadius.vertical(
+                                      bottom: Radius.circular(
+                                          AppDimensions.radiusMd)),
                                 ),
                                 child: ListView.separated(
                                   itemCount: _expenses.length,
-                                  separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.divider),
+                                  separatorBuilder: (_, __) => const Divider(
+                                      height: 1, color: AppColors.divider),
                                   itemBuilder: (ctx, i) => _ExpenseRow(
                                     expense: _expenses[i],
-                                    onEdit: () => _showDialog(expense: _expenses[i]),
+                                    onEdit: () =>
+                                        _showDialog(expense: _expenses[i]),
                                     onDelete: () => _delete(_expenses[i]),
                                   ),
                                 ),
@@ -178,7 +206,10 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       barrierDismissible: false,
       builder: (ctx) => _ExpenseDialog(
         expense: expense,
-        onSaved: () { Navigator.pop(ctx); _load(); },
+        onSaved: () {
+          Navigator.pop(ctx);
+          _load();
+        },
       ),
     );
   }
@@ -188,9 +219,12 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('حذف المصروف'),
-        content: Text('هل أنت متأكد من حذف هذا المصروف؟\nالمبلغ: ${expense.amount} ${AppStrings.currency}'),
+        content: Text(
+            'هل أنت متأكد من حذف هذا المصروف؟\nالمبلغ: ${expense.amount} ${AppStrings.currency}'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text(AppStrings.btnCancel)),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text(AppStrings.btnCancel)),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             onPressed: () => Navigator.pop(ctx, true),
@@ -214,12 +248,15 @@ class _TH extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(label, style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600, color: AppColors.textSecondary));
+    return Text(label,
+        style: AppTypography.bodySmall.copyWith(
+            fontWeight: FontWeight.w600, color: AppColors.textSecondary));
   }
 }
 
 class _ExpenseRow extends StatefulWidget {
-  const _ExpenseRow({required this.expense, required this.onEdit, required this.onDelete});
+  const _ExpenseRow(
+      {required this.expense, required this.onEdit, required this.onDelete});
   final Expense expense;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -240,23 +277,52 @@ class _ExpenseRowState extends State<_ExpenseRow> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         color: _hovered ? AppColors.surfaceVariant : Colors.transparent,
-        padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space16, vertical: AppDimensions.space12),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.space16, vertical: AppDimensions.space12),
         child: Row(
           children: [
-            Expanded(flex: 2, child: Text(_formatDate(e.date), style: AppTypography.bodySmall)),
-            Expanded(flex: 3, child: Text(e.category, style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600))),
-            Expanded(flex: 4, child: Text(e.description ?? '—', style: AppTypography.bodySmall, overflow: TextOverflow.ellipsis)),
-            Expanded(flex: 2, child: Text('${e.amount.toStringAsFixed(2)} ${AppStrings.currency}', style: AppTypography.bodySmall.copyWith(color: AppColors.error, fontWeight: FontWeight.w700))),
+            Expanded(
+                flex: 2,
+                child:
+                    Text(_formatDate(e.date), style: AppTypography.bodySmall)),
+            Expanded(
+                flex: 3,
+                child: Text(e.category,
+                    style: AppTypography.bodySmall
+                        .copyWith(fontWeight: FontWeight.w600))),
+            Expanded(
+                flex: 4,
+                child: Text(e.description ?? '—',
+                    style: AppTypography.bodySmall,
+                    overflow: TextOverflow.ellipsis)),
+            Expanded(
+                flex: 2,
+                child: Text(
+                    '${e.amount.toStringAsFixed(2)} ${AppStrings.currency}',
+                    style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.error, fontWeight: FontWeight.w700))),
             SizedBox(
               width: 80,
-              child: _hovered ? Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(icon: const Icon(Icons.edit_outlined, size: 18), padding: EdgeInsets.zero, constraints: const BoxConstraints(), color: AppColors.info, onPressed: widget.onEdit),
-                  const SizedBox(width: 8),
-                  IconButton(icon: const Icon(Icons.delete_outline, size: 18), padding: EdgeInsets.zero, constraints: const BoxConstraints(), color: AppColors.error, onPressed: widget.onDelete),
-                ],
-              ) : const SizedBox(),
+              child: _hovered
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        IconButton(
+                            icon: const Icon(Icons.edit_outlined, size: 18),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            color: AppColors.info,
+                            onPressed: widget.onEdit),
+                        const SizedBox(width: 8),
+                        IconButton(
+                            icon: const Icon(Icons.delete_outline, size: 18),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            color: AppColors.error,
+                            onPressed: widget.onDelete),
+                      ],
+                    )
+                  : const SizedBox(),
             ),
           ],
         ),
@@ -279,19 +345,27 @@ class _ExpenseDialog extends StatefulWidget {
 class _ExpenseDialogState extends State<_ExpenseDialog> {
   final _repo = ExpenseRepository();
   final _formKey = GlobalKey<FormState>();
-  
+
   late final TextEditingController _catCtrl;
   late final TextEditingController _amountCtrl;
   late final TextEditingController _descCtrl;
   bool _saving = false;
 
-  final List<String> _commonCategories = ['مشتريات خامات', 'رواتب', 'كهرباء ومياه', 'إيجار', 'صيانة', 'نثريات'];
+  final List<String> _commonCategories = [
+    'مشتريات خامات',
+    'رواتب',
+    'كهرباء ومياه',
+    'إيجار',
+    'صيانة',
+    'نثريات'
+  ];
 
   @override
   void initState() {
     super.initState();
     _catCtrl = TextEditingController(text: widget.expense?.category ?? '');
-    _amountCtrl = TextEditingController(text: widget.expense?.amount.toString() ?? '');
+    _amountCtrl =
+        TextEditingController(text: widget.expense?.amount.toString() ?? '');
     _descCtrl = TextEditingController(text: widget.expense?.description ?? '');
   }
 
@@ -306,7 +380,7 @@ class _ExpenseDialogState extends State<_ExpenseDialog> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
-    
+
     final now = DateTime.now();
     final expense = Expense(
       id: widget.expense?.id ?? DatabaseHelper.generateId(),
@@ -317,11 +391,21 @@ class _ExpenseDialogState extends State<_ExpenseDialog> {
       date: widget.expense?.date ?? now,
       createdAt: widget.expense?.createdAt ?? now,
     );
-    
-    if (widget.expense == null) {
-      await _repo.insert(expense);
-    } else {
-      await _repo.update(expense);
+
+    try {
+      if (widget.expense == null) {
+        await _repo.insert(expense);
+      } else {
+        await _repo.update(expense);
+      }
+    } on StateError catch (error) {
+      if (mounted) {
+        setState(() => _saving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error.message)),
+        );
+      }
+      return;
     }
     widget.onSaved();
   }
@@ -341,81 +425,107 @@ class _ExpenseDialogState extends State<_ExpenseDialog> {
               children: [
                 Row(
                   children: [
-                    Text(widget.expense == null ? AppStrings.expenseAddNew : AppStrings.expenseEdit, style: AppTypography.headlineSmall),
+                    Text(
+                        widget.expense == null
+                            ? AppStrings.expenseAddNew
+                            : AppStrings.expenseEdit,
+                        style: AppTypography.headlineSmall),
                     const Spacer(),
-                    IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => Navigator.pop(context)),
+                    IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () => Navigator.pop(context)),
                   ],
                 ),
                 const SizedBox(height: 20),
-                
-                Text(AppStrings.expenseAmount, style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600)),
+                Text(AppStrings.expenseAmount,
+                    style: AppTypography.bodySmall
+                        .copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 6),
                 TextFormField(
                   controller: _amountCtrl,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*'))],
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*'))
+                  ],
                   validator: (v) => v!.isEmpty ? 'مطلوب' : null,
                   style: AppTypography.titleLarge,
                   decoration: InputDecoration(
                     suffixText: AppStrings.currency,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusSm)),
+                    border: OutlineInputBorder(
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.radiusSm)),
                   ),
                 ),
                 const SizedBox(height: 16),
-                
-                Text(AppStrings.expenseCategory, style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600)),
+                Text(AppStrings.expenseCategory,
+                    style: AppTypography.bodySmall
+                        .copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 6),
                 Autocomplete<String>(
                   initialValue: TextEditingValue(text: _catCtrl.text),
                   optionsBuilder: (textEditingValue) {
                     if (textEditingValue.text.isEmpty) return _commonCategories;
-                    return _commonCategories.where((c) => c.contains(textEditingValue.text));
+                    return _commonCategories
+                        .where((c) => c.contains(textEditingValue.text));
                   },
                   onSelected: (v) => _catCtrl.text = v,
-                  fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
-                    if (textEditingController.text.isEmpty && _catCtrl.text.isNotEmpty) {
+                  fieldViewBuilder: (context, textEditingController, focusNode,
+                      onFieldSubmitted) {
+                    if (textEditingController.text.isEmpty &&
+                        _catCtrl.text.isNotEmpty) {
                       textEditingController.text = _catCtrl.text;
                     }
                     _catCtrl.text = textEditingController.text;
                     textEditingController.addListener(() {
                       _catCtrl.text = textEditingController.text;
                     });
-                    
+
                     return TextFormField(
                       controller: textEditingController,
                       focusNode: focusNode,
                       validator: (v) => v!.isEmpty ? 'مطلوب' : null,
                       decoration: InputDecoration(
                         hintText: 'مثال: مشتريات، رواتب، كهرباء',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusSm)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        border: OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.circular(AppDimensions.radiusSm)),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
                       ),
                     );
                   },
                 ),
                 const SizedBox(height: 16),
-                
-                Text(AppStrings.expenseDescription, style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600)),
+                Text(AppStrings.expenseDescription,
+                    style: AppTypography.bodySmall
+                        .copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 6),
                 TextFormField(
                   controller: _descCtrl,
                   maxLines: 2,
                   decoration: InputDecoration(
                     hintText: 'ملاحظات تفصيلية حول المصروف...',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusSm)),
+                    border: OutlineInputBorder(
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.radiusSm)),
                   ),
                 ),
-                
                 const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    OutlinedButton(onPressed: () => Navigator.pop(context), child: const Text(AppStrings.btnCancel)),
+                    OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(AppStrings.btnCancel)),
                     const SizedBox(width: 12),
                     ElevatedButton(
                       onPressed: _saving ? null : _save,
                       child: _saving
-                          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2))
                           : const Text(AppStrings.btnSave),
                     ),
                   ],

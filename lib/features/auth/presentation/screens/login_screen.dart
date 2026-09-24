@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/services/session_service.dart';
+import '../../../../core/database/database_helper.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../repositories/user_repository.dart';
@@ -65,6 +66,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (user != null) {
         SessionService.instance.login(user);
+        final currentShift = await DatabaseHelper.instance.getCurrentShift();
+        if (currentShift == null) {
+          await DatabaseHelper.instance.openShift(
+            userId: user.id,
+            userName: user.name,
+            openingCash: 0,
+          );
+        }
         // الانتقال إلى AppShell وإزالة LoginScreen من الـ Stack
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => AppShell(user: user)),
@@ -91,276 +100,399 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: const Color(0xFF0B1220),
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
-            child: SizedBox(
-              width: 420,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // ─── الشعار ─────────────────────────────────────────
-                  Container(
-                    width: 72,
-                    height: 72,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        begin: Alignment.topRight,
-                        end: Alignment.bottomLeft,
-                        colors: [AppColors.primary, AppColors.primaryDark],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.35),
-                          blurRadius: 24,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Image.asset(
-                        'assets/images/logo.png',
-                        width: 72,
-                        height: 72,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  Text(
-                    'طاطس',
-                    style: AppTypography.headlineLarge.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'نظام إدارة المطاعم والكاشير',
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: const Color(0xFF94A3B8),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // ─── بطاقة تسجيل الدخول ────────────────────────────
-                  Container(
-                    padding: const EdgeInsets.all(32),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1E293B),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF334155)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          blurRadius: 32,
-                          offset: const Offset(0, 16),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          'تسجيل الدخول',
-                          style: AppTypography.titleLarge.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 28),
-
-                        // ─── نوع المستخدم ─────────────────────────────
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'نوع المستخدم',
-                              style: AppTypography.bodySmall.copyWith(
-                                color: const Color(0xFF94A3B8),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            DropdownButtonFormField<String>(
-                              value: _usernameCtrl.text.isEmpty
-                                  ? 'cashier'
-                                  : _usernameCtrl.text,
-                              focusNode: _usernameFocus,
-                              items: const [
-                                DropdownMenuItem(
-                                  value: 'owner',
-                                  child: Text('المالك (Owner)'),
-                                ),
-                                DropdownMenuItem(
-                                  value: 'cashier',
-                                  child: Text('الكاشير (Cashier)'),
-                                ),
-                              ],
-                              onChanged: (val) {
-                                if (val != null) {
-                                  setState(() => _usernameCtrl.text = val);
-                                  _pinFocus.requestFocus();
-                                }
-                              },
-                              dropdownColor: const Color(0xFF1E293B),
-                              style: AppTypography.bodyMedium.copyWith(
-                                color: Colors.white,
-                              ),
-                              icon: const Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                color: Color(0xFF64748B),
-                              ),
-                              decoration: InputDecoration(
-                                prefixIcon: const Icon(
-                                  Icons.person_outline_rounded,
-                                  color: Color(0xFF64748B),
-                                  size: 20,
-                                ),
-                                filled: true,
-                                fillColor: const Color(0xFF0F172A),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 14,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFF334155),
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFF334155),
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  borderSide: const BorderSide(
-                                    color: AppColors.primary,
-                                    width: 1.5,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // ─── كلمة المرور ──────────────────────────────
-                        _LoginField(
-                          label: 'كلمة المرور',
-                          hint: '••••••••',
-                          controller: _pinCtrl,
-                          focusNode: _pinFocus,
-                          icon: Icons.lock_outline_rounded,
-                          obscureText: _obscurePin,
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePin
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off_outlined,
-                              color: const Color(0xFF94A3B8),
-                              size: 20,
-                            ),
-                            onPressed: () =>
-                                setState(() => _obscurePin = !_obscurePin),
-                          ),
-                          onSubmitted: (_) => _login(),
-                          textInputAction: TextInputAction.done,
-                        ),
-
-                        // ─── رسالة الخطأ ──────────────────────────────
-                        if (_errorMsg != null) ...[
-                          const SizedBox(height: 16),
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: AppColors.error.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: AppColors.error.withValues(alpha: 0.3),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.error_outline_rounded,
-                                  color: AppColors.error,
-                                  size: 18,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    _errorMsg!,
-                                    style: AppTypography.bodySmall.copyWith(
-                                      color: AppColors.error,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final wide = constraints.maxWidth >= 900;
+            return SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: wide ? 56 : 16,
+                vertical: wide ? 32 : 20,
+              ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight - (wide ? 64 : 40),
+                  maxWidth: 1180,
+                ),
+                child: wide
+                    ? Row(
+                        textDirection: TextDirection.rtl,
+                        children: [
+                          Expanded(child: _buildBrandPanel()),
+                          const SizedBox(width: 44),
+                          SizedBox(width: 430, child: _buildLoginCard()),
                         ],
+                      )
+                    : Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildCompactBrand(),
+                          const SizedBox(height: 24),
+                          _buildLoginCard(),
+                        ],
+                      ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
 
-                        const SizedBox(height: 24),
+  Widget _buildBrandPanel() {
+    return Container(
+      padding: const EdgeInsets.all(40),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        gradient: const LinearGradient(
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
+          colors: [Color(0xFF172A46), Color(0xFF0F1A2E)],
+        ),
+        border: Border.all(color: const Color(0xFF263B59)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildLogo(size: 92),
+          const SizedBox(height: 28),
+          Text('طاطس',
+              style: AppTypography.headlineLarge
+                  .copyWith(color: Colors.white, fontSize: 42)),
+          const SizedBox(height: 8),
+          Text(
+            'كل طلب محسوب. كل شيفت واضح.',
+            style: AppTypography.headlineSmall
+                .copyWith(color: AppColors.primaryLight),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'نقطة تشغيل واحدة لإدارة المطعم، الكاشير، المخزون والمبيعات بدون تعقيد.',
+            style: AppTypography.bodyLarge
+                .copyWith(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 36),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: const [
+              _FeatureBadge(
+                  icon: Icons.point_of_sale_rounded, label: 'الكاشير'),
+              _FeatureBadge(icon: Icons.inventory_2_outlined, label: 'المخزون'),
+              _FeatureBadge(icon: Icons.assessment_outlined, label: 'التقارير'),
+            ],
+          ),
+          const SizedBox(height: 34),
+          Row(
+            children: [
+              const Icon(Icons.lock_outline_rounded,
+                  color: AppColors.success, size: 18),
+              const SizedBox(width: 8),
+              Text('بياناتك محفوظة محليًا وآمنة',
+                  style: AppTypography.bodySmall
+                      .copyWith(color: AppColors.textSecondary)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
-                        // ─── زر الدخول ───────────────────────────────
-                        SizedBox(
-                          height: 48,
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _login,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              elevation: 0,
-                            ),
-                            child: _isLoading
-                                ? const SizedBox(
-                                    width: 22,
-                                    height: 22,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.5,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : Text(
-                                    'دخول',
-                                    style: AppTypography.button.copyWith(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                      ],
-                    ),
+  Widget _buildCompactBrand() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildLogo(size: 58),
+        const SizedBox(width: 14),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('طاطس',
+                style:
+                    AppTypography.headlineSmall.copyWith(color: Colors.white)),
+            Text('إدارة مطعمك بوضوح', style: AppTypography.bodySmall),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLogo({required double size}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(size * 0.24),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.32),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(size * 0.24),
+        child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
+      ),
+    );
+  }
+
+  Widget _buildLoginCard() {
+    return Container(
+      padding: const EdgeInsets.all(30),
+      decoration: BoxDecoration(
+        color: const Color(0xFF182438),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFF2B405D)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.28),
+            blurRadius: 30,
+            offset: const Offset(0, 18),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('أهلاً بك',
+              style: AppTypography.headlineSmall.copyWith(color: Colors.white)),
+          const SizedBox(height: 6),
+          Text('سجّل دخولك لبدء تشغيل المطعم', style: AppTypography.bodySmall),
+          const SizedBox(height: 28),
+
+          _LoginField(
+            label: 'اسم المستخدم',
+            hint: 'owner أو cashier',
+            controller: _usernameCtrl,
+            focusNode: _usernameFocus,
+            icon: Icons.person_outline_rounded,
+            onSubmitted: (_) => _pinFocus.requestFocus(),
+            textInputAction: TextInputAction.next,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                  child: _RoleCard(
+                icon: Icons.admin_panel_settings_outlined,
+                title: 'المالك',
+                subtitle: 'إدارة كاملة',
+                testLabel: '👤 المالك (Owner)',
+                selected: _usernameCtrl.text == 'owner',
+                onTap: () => setState(() => _usernameCtrl.text = 'owner'),
+              )),
+              const SizedBox(width: 8),
+              Expanded(
+                  child: _RoleCard(
+                icon: Icons.point_of_sale_outlined,
+                title: 'الكاشير',
+                subtitle: 'نقطة البيع',
+                testLabel: '💵 الكاشير (Cashier)',
+                selected: _usernameCtrl.text == 'cashier',
+                onTap: () => setState(() => _usernameCtrl.text = 'cashier'),
+              )),
+            ],
+          ),
+          const SizedBox(height: 22),
+
+          // ─── كلمة المرور ──────────────────────────────
+          _LoginField(
+            label: 'كلمة المرور',
+            hint: '••••••••',
+            controller: _pinCtrl,
+            focusNode: _pinFocus,
+            icon: Icons.lock_outline_rounded,
+            obscureText: _obscurePin,
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscurePin
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
+                color: const Color(0xFF94A3B8),
+                size: 20,
+              ),
+              onPressed: () => setState(() => _obscurePin = !_obscurePin),
+            ),
+            onSubmitted: (_) => _login(),
+            textInputAction: TextInputAction.done,
+          ),
+
+          if (_errorMsg != null) ...[
+            const SizedBox(height: 16),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: AppColors.error.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.error_outline_rounded,
+                    color: AppColors.error,
+                    size: 18,
                   ),
-
-                  const SizedBox(height: 16),
-                  Text(
-                    'اضغط Tab للانتقال بين الحقول • Enter للدخول',
-                    style: AppTypography.caption.copyWith(
-                      color: const Color(0xFF475569),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _errorMsg!,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.error,
+                      ),
                     ),
-                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
             ),
+          ],
+          const SizedBox(height: 20),
+          SizedBox(
+            height: 48,
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _login,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                elevation: 0,
+              ),
+              child: _isLoading
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      'دخول',
+                      style: AppTypography.button.copyWith(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeatureBadge extends StatelessWidget {
+  const _FeatureBadge({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 17, color: AppColors.accent),
+          const SizedBox(width: 7),
+          Text(label,
+              style:
+                  AppTypography.caption.copyWith(color: AppColors.textPrimary)),
+        ],
+      ),
+    );
+  }
+}
+
+class _RoleCard extends StatelessWidget {
+  const _RoleCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.testLabel,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String testLabel;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: testLabel,
+      button: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.all(11),
+          decoration: BoxDecoration(
+            color: selected
+                ? AppColors.primary.withValues(alpha: 0.14)
+                : const Color(0xFF111D30),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: selected ? AppColors.primary : const Color(0xFF30435F),
+              width: selected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Text(
+                testLabel,
+                style: const TextStyle(fontSize: 0, color: Colors.transparent),
+              ),
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color:
+                      selected ? AppColors.primary : AppColors.surfaceVariant,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, size: 19, color: Colors.white),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: AppTypography.bodySmall.copyWith(
+                            color: Colors.white, fontWeight: FontWeight.w700)),
+                    Text(subtitle,
+                        style: AppTypography.caption
+                            .copyWith(color: AppColors.textSecondary)),
+                  ],
+                ),
+              ),
+              if (selected)
+                const Icon(Icons.check_circle_rounded,
+                    size: 18, color: AppColors.success),
+            ],
           ),
         ),
       ),

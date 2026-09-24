@@ -13,6 +13,7 @@ import '../../../../repositories/category_repository.dart';
 import '../../../../repositories/order_repository.dart';
 import '../../../../repositories/product_repository.dart';
 import '../../../../core/services/printing_service.dart';
+import '../../../../core/services/session_service.dart';
 import '../../../products/presentation/screens/products_screen.dart';
 
 // ─── عنصر في السلة ────────────────────────────────────────────────────────
@@ -143,9 +144,8 @@ class _CashierScreenState extends State<CashierScreen> {
   // ─── عمليات السلة ──────────────────────────────────────────────────
   void _addToCart(Product product) {
     setState(() {
-      final existing = _cart
-          .where((c) => c.product.id == product.id)
-          .firstOrNull;
+      final existing =
+          _cart.where((c) => c.product.id == product.id).firstOrNull;
       if (existing != null) {
         existing.quantity++;
       } else {
@@ -167,9 +167,9 @@ class _CashierScreenState extends State<CashierScreen> {
   void _removeItem(int idx) => setState(() => _cart.removeAt(idx));
 
   void _clearCart() => setState(() {
-    _cart.clear();
-    _discount = 0;
-  });
+        _cart.clear();
+        _discount = 0;
+      });
 
   void _showAddProductDialog() {
     showDialog(
@@ -210,8 +210,19 @@ class _CashierScreenState extends State<CashierScreen> {
         discount: _discount,
         total: _total,
         onDiscount: (d) => setState(() => _discount = d),
-        onConfirm: (method, paidAmount, ref) =>
-            _processPayment(ctx, method, paidAmount, ref),
+        onConfirm: (method, paidAmount, ref, orderType, address, phone,
+                customerId, customerName) =>
+            _processPayment(
+          ctx,
+          method,
+          paidAmount,
+          ref,
+          orderType,
+          address,
+          phone,
+          customerId,
+          customerName,
+        ),
       ),
     );
   }
@@ -221,8 +232,21 @@ class _CashierScreenState extends State<CashierScreen> {
     PaymentMethod method,
     double paidAmount,
     String? ref,
+    OrderType orderType,
+    String? address,
+    String? phone,
+    String? selectedCustomerId,
+    String? customerName,
   ) async {
     try {
+      String? customerId = selectedCustomerId;
+      if (orderType == OrderType.delivery && customerId == null) {
+        customerId = await DatabaseHelper.instance.addCustomer(
+          name: customerName!.isEmpty ? 'عميل دليفري' : customerName,
+          phone: phone!,
+          address: address,
+        );
+      }
       final orderNumber = await DatabaseHelper.instance.generateOrderNumber();
       final orderId = DatabaseHelper.generateId();
       final now = DateTime.now();
@@ -244,13 +268,22 @@ class _CashierScreenState extends State<CashierScreen> {
       final order = Order(
         id: orderId,
         orderNumber: orderNumber,
-        userName: AppStrings.currentUser,
+        userId: SessionService.instance.currentUser?.id,
+        userName: SessionService.instance.currentUser?.name,
         subtotal: _subtotal,
         discountAmount: _discount,
         finalAmount: _total,
         paidAmount: paidAmount,
         changeAmount: (paidAmount - _total).clamp(0, double.infinity),
         paymentMethod: method,
+        orderType: orderType,
+        customerId: customerId,
+        deliveryAddress: orderType == OrderType.delivery
+            ? [phone, address]
+                .whereType<String>()
+                .where((v) => v.isNotEmpty)
+                .join(' - ')
+            : null,
         paymentRef: ref,
         createdAt: now,
         items: items,
@@ -805,15 +838,15 @@ class _ProductCardState extends State<_ProductCard> {
             color: hasQty
                 ? AppColors.primary.withValues(alpha: 0.04)
                 : (_hovered && !outOfStock
-                      ? AppColors.surfaceVariant
-                      : AppColors.surface),
+                    ? AppColors.surfaceVariant
+                    : AppColors.surface),
             borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
             border: Border.all(
               color: hasQty
                   ? AppColors.primary
                   : (_hovered && !outOfStock
-                        ? AppColors.primary.withValues(alpha: 0.4)
-                        : AppColors.border),
+                      ? AppColors.primary.withValues(alpha: 0.4)
+                      : AppColors.border),
               width: hasQty ? 1.5 : 1,
             ),
             boxShadow: _hovered && !outOfStock && !hasQty
@@ -1473,7 +1506,8 @@ class _PaymentDialog extends StatefulWidget {
   final double discount;
   final double total;
   final ValueChanged<double> onDiscount;
-  final Function(PaymentMethod, double, String?) onConfirm;
+  final Function(PaymentMethod, double, String?, OrderType, String?, String?,
+      String?, String?) onConfirm;
 
   @override
   State<_PaymentDialog> createState() => _PaymentDialogState();
@@ -1481,20 +1515,47 @@ class _PaymentDialog extends StatefulWidget {
 
 class _PaymentDialogState extends State<_PaymentDialog> {
   PaymentMethod _method = PaymentMethod.cash;
+  OrderType _orderType = OrderType.takeaway;
   final _paidCtrl = TextEditingController();
   final _refCtrl = TextEditingController();
+  final _addressCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _customerNameCtrl = TextEditingController();
+  List<Map<String, dynamic>> _customers = [];
+  String? _selectedCustomerId;
   bool _processing = false;
 
   @override
   void initState() {
     super.initState();
     _paidCtrl.text = widget.total.toStringAsFixed(2);
+    _loadCustomers();
+  }
+
+  Future<void> _loadCustomers() async {
+    final customers = await DatabaseHelper.instance.getCustomers();
+    if (mounted) setState(() => _customers = customers);
+  }
+
+  void _selectCustomer(String? id) {
+    final customer = _customers.where((item) => item['id'] == id).firstOrNull;
+    setState(() {
+      _selectedCustomerId = id;
+      if (customer != null) {
+        _customerNameCtrl.text = customer['name'] as String? ?? '';
+        _phoneCtrl.text = customer['phone'] as String? ?? '';
+        _addressCtrl.text = customer['address'] as String? ?? '';
+      }
+    });
   }
 
   @override
   void dispose() {
     _paidCtrl.dispose();
     _refCtrl.dispose();
+    _addressCtrl.dispose();
+    _phoneCtrl.dispose();
+    _customerNameCtrl.dispose();
     super.dispose();
   }
 
@@ -1502,6 +1563,18 @@ class _PaymentDialogState extends State<_PaymentDialog> {
   double get _change => (_paid - widget.total).clamp(0, double.infinity);
 
   Future<void> _confirm() async {
+    if (_orderType == OrderType.delivery &&
+        (_customerNameCtrl.text.trim().isEmpty ||
+            _phoneCtrl.text.trim().isEmpty ||
+            _addressCtrl.text.trim().isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('اكتب رقم العميل وعنوان التوصيل أولًا'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
     if (_paid < widget.total && _method == PaymentMethod.cash) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -1512,13 +1585,17 @@ class _PaymentDialogState extends State<_PaymentDialog> {
       return;
     }
     setState(() => _processing = true);
-    final finalPaidAmount = _method == PaymentMethod.cash
-        ? _paid
-        : widget.total;
+    final finalPaidAmount =
+        _method == PaymentMethod.cash ? _paid : widget.total;
     await widget.onConfirm(
       _method,
       finalPaidAmount,
       _refCtrl.text.isNotEmpty ? _refCtrl.text : null,
+      _orderType,
+      _addressCtrl.text.trim().isNotEmpty ? _addressCtrl.text.trim() : null,
+      _phoneCtrl.text.trim().isNotEmpty ? _phoneCtrl.text.trim() : null,
+      _selectedCustomerId,
+      _customerNameCtrl.text.trim(),
     );
   }
 
@@ -1555,6 +1632,86 @@ class _PaymentDialogState extends State<_PaymentDialog> {
                   children: [
                     Text('إتمام الدفع', style: AppTypography.headlineMedium),
                     const SizedBox(height: AppDimensions.space32),
+
+                    Text(
+                      'نوع الطلب',
+                      style: AppTypography.titleMedium.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SegmentedButton<OrderType>(
+                      segments: const [
+                        ButtonSegment(
+                          value: OrderType.takeaway,
+                          icon: Icon(Icons.shopping_bag_outlined),
+                          label: Text('تيك أواي'),
+                        ),
+                        ButtonSegment(
+                          value: OrderType.delivery,
+                          icon: Icon(Icons.delivery_dining_outlined),
+                          label: Text('دليفري'),
+                        ),
+                      ],
+                      selected: {_orderType},
+                      onSelectionChanged: (selected) => setState(
+                        () => _orderType = selected.first,
+                      ),
+                    ),
+                    if (_orderType == OrderType.delivery) ...[
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value: _selectedCustomerId,
+                        items: _customers
+                            .map(
+                              (customer) => DropdownMenuItem<String>(
+                                value: customer['id'] as String,
+                                child: Text(customer['name'] as String),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: _selectCustomer,
+                        decoration: const InputDecoration(
+                          labelText: 'العميل المحفوظ',
+                          prefixIcon: Icon(Icons.person_outline),
+                          filled: true,
+                          fillColor: AppColors.surface,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _customerNameCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'اسم العميل الجديد',
+                          prefixIcon: Icon(Icons.badge_outlined),
+                          filled: true,
+                          fillColor: AppColors.surface,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _phoneCtrl,
+                        keyboardType: TextInputType.phone,
+                        decoration: const InputDecoration(
+                          labelText: 'رقم العميل',
+                          prefixIcon: Icon(Icons.phone_outlined),
+                          filled: true,
+                          fillColor: AppColors.surface,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _addressCtrl,
+                        maxLines: 2,
+                        decoration: const InputDecoration(
+                          labelText: 'عنوان التوصيل',
+                          prefixIcon: Icon(Icons.location_on_outlined),
+                          filled: true,
+                          fillColor: AppColors.surface,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: AppDimensions.space24),
 
                     // طريقة الدفع
                     Text(

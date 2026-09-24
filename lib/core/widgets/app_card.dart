@@ -30,9 +30,8 @@ class AppCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final radius = borderRadius ?? AppDimensions.radiusMd;
-    final content = padding != null
-        ? Padding(padding: padding!, child: child)
-        : child;
+    final content =
+        padding != null ? Padding(padding: padding!, child: child) : child;
 
     return Material(
       color: color ?? AppColors.surface,
@@ -41,8 +40,12 @@ class AppCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(radius),
-        hoverColor: onTap != null ? AppColors.primary.withValues(alpha: 0.03) : Colors.transparent,
-        splashColor: onTap != null ? AppColors.primary.withValues(alpha: 0.06) : Colors.transparent,
+        hoverColor: onTap != null
+            ? AppColors.primary.withValues(alpha: 0.03)
+            : Colors.transparent,
+        splashColor: onTap != null
+            ? AppColors.primary.withValues(alpha: 0.06)
+            : Colors.transparent,
         highlightColor: Colors.transparent,
         child: Container(
           decoration: BoxDecoration(
@@ -99,7 +102,9 @@ class AppCardHeader extends StatelessWidget {
                 color: (iconColor ?? AppColors.primary).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
               ),
-              child: Icon(icon, size: AppDimensions.iconMd, color: iconColor ?? AppColors.primary),
+              child: Icon(icon,
+                  size: AppDimensions.iconMd,
+                  color: iconColor ?? AppColors.primary),
             ),
             const SizedBox(width: AppDimensions.space12),
           ],
@@ -115,7 +120,7 @@ class AppCardHeader extends StatelessWidget {
               ],
             ),
           ),
-          ?trailing,
+          if (trailing != null) trailing!,
         ],
       ),
     );

@@ -37,6 +37,21 @@ class UserRepository {
     await _db.update('users', {'is_active': isActive ? 1 : 0}, 'id = ?', [id]);
   }
 
+  Future<bool> changePin({
+    required String userId,
+    required String currentPin,
+    required String newPin,
+  }) async {
+    final results = await _db.query(
+      'users',
+      where: 'id = ? AND pin = ? AND is_active = 1',
+      whereArgs: [userId, currentPin],
+    );
+    if (results.isEmpty) return false;
+    await _db.update('users', {'pin': newPin}, 'id = ?', [userId]);
+    return true;
+  }
+
   Future<bool> usernameExists(String username, {String? excludeId}) async {
     final results = await _db.query(
       'users',

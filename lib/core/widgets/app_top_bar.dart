@@ -10,9 +10,13 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   const AppTopBar({
     super.key,
     required this.title,
+    this.action,
+    this.onBack,
   });
 
   final String title;
+  final Widget? action;
+  final VoidCallback? onBack;
 
   @override
   Size get preferredSize => const Size.fromHeight(AppDimensions.topBarHeight);
@@ -34,13 +38,23 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
           Expanded(
             child: Row(
               children: [
+                if (onBack != null) ...[
+                  IconButton(
+                    tooltip: AppStrings.btnBack,
+                    onPressed: onBack,
+                    icon: const Icon(Icons.arrow_forward_rounded),
+                    color: AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: AppDimensions.space4),
+                ],
                 // خط ملوّن للعنوان
                 Container(
                   width: 4,
                   height: 22,
                   decoration: BoxDecoration(
                     color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusFull),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.radiusFull),
                   ),
                 ),
                 const SizedBox(width: AppDimensions.space12),
@@ -59,6 +73,10 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (action != null) ...[
+                action!,
+                const SizedBox(width: AppDimensions.space8),
+              ],
               // التاريخ الحالي
               _DateChip(),
 
@@ -67,10 +85,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
               // الإشعارات
               Tooltip(
                 message: AppStrings.topBarNotifications,
-                child: _TopBarIconButton(
-                  icon: Icons.notifications_none_rounded,
-                  onTap: () {},
-                ),
+                child: _NotificationButton(),
               ),
 
               const SizedBox(width: AppDimensions.space8),
@@ -90,6 +105,142 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _NotificationButton extends StatefulWidget {
+  const _NotificationButton();
+
+  @override
+  State<_NotificationButton> createState() => _NotificationButtonState();
+}
+
+class _NotificationButtonState extends State<_NotificationButton> {
+  int _count = 0;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCount();
+  }
+
+  Future<void> _loadCount() async {
+    final products = await DatabaseHelper.instance.rawQuery(
+      'SELECT COUNT(*) AS count FROM products WHERE is_active = 1 AND min_stock > 0 AND stock <= min_stock',
+    );
+    final shift = await DatabaseHelper.instance.getCurrentShift();
+    if (mounted) {
+      setState(() {
+        _count =
+            (products.first['count'] as num).toInt() + (shift == null ? 0 : 1);
+        _loading = false;
+      });
+    }
+  }
+
+  Future<void> _openNotifications() async {
+    final products = await DatabaseHelper.instance.rawQuery(
+      'SELECT name, stock, unit, min_stock FROM products WHERE is_active = 1 AND min_stock > 0 AND stock <= min_stock ORDER BY stock ASC',
+    );
+    final shift = await DatabaseHelper.instance.getCurrentShift();
+    if (!mounted) return;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.notifications_active_outlined,
+                color: AppColors.primary),
+            const SizedBox(width: AppDimensions.space8),
+            Text(AppStrings.topBarNotifications,
+                style: AppTypography.titleLarge),
+          ],
+        ),
+        content: SizedBox(
+          width: 420,
+          child: products.isEmpty && shift == null
+              ? const Padding(
+                  padding:
+                      EdgeInsets.symmetric(vertical: AppDimensions.space24),
+                  child: Text('لا توجد إشعارات جديدة'),
+                )
+              : ListView(
+                  shrinkWrap: true,
+                  children: [
+                    if (shift != null)
+                      ListTile(
+                        leading: const Icon(Icons.point_of_sale_outlined,
+                            color: AppColors.success),
+                        title: const Text('يوجد شيفت مفتوح'),
+                        subtitle: Text('المسؤول: ${shift['user_name']}'),
+                      ),
+                    for (final product in products)
+                      ListTile(
+                        leading: const Icon(Icons.warning_amber_rounded,
+                            color: AppColors.warning),
+                        title: Text('مخزون منخفض: ${product['name']}'),
+                        subtitle: Text(
+                          'المتاح: ${product['stock']} ${product['unit']} - الحد الأدنى: ${product['min_stock']}',
+                        ),
+                      ),
+                  ],
+                ),
+        ),
+        actions: [
+          TextButton.icon(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              _loadCount();
+            },
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('تحديث'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text(AppStrings.btnClose),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        _TopBarIconButton(
+          icon: _loading || _count == 0
+              ? Icons.notifications_none_rounded
+              : Icons.notifications_active_rounded,
+          onTap: _openNotifications,
+        ),
+        if (_count > 0)
+          Positioned(
+            top: -2,
+            right: -2,
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 17, minHeight: 17),
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              decoration: const BoxDecoration(
+                color: AppColors.error,
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                _count > 9 ? '9+' : '$_count',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -133,10 +284,28 @@ class _DateChip extends StatelessWidget {
   }
 
   String _formatArabicDate(DateTime date) {
-    const weekdays = ['الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'];
+    const weekdays = [
+      'الاثنين',
+      'الثلاثاء',
+      'الأربعاء',
+      'الخميس',
+      'الجمعة',
+      'السبت',
+      'الأحد'
+    ];
     const months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+      'يناير',
+      'فبراير',
+      'مارس',
+      'أبريل',
+      'مايو',
+      'يونيو',
+      'يوليو',
+      'أغسطس',
+      'سبتمبر',
+      'أكتوبر',
+      'نوفمبر',
+      'ديسمبر',
     ];
     final weekday = weekdays[date.weekday - 1];
     final month = months[date.month - 1];
@@ -220,7 +389,8 @@ class _UserChipState extends State<_UserChip> {
             ),
             Text(
               _restaurantName,
-              style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
+              style: AppTypography.caption
+                  .copyWith(color: AppColors.textSecondary),
             ),
           ],
         ),

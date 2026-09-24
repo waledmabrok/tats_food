@@ -11,6 +11,9 @@ import '../../features/users/presentation/screens/users_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../shell/placeholder_screen.dart';
 import '../constants/app_strings.dart';
+import '../../features/management/presentation/screens/management_section_screen.dart';
+import '../../features/Shift/screens/PurchaseReceiveScreen.dart';
+import '../../features/Shift/screens/shift.dart';
 
 /// تعريف مسارات التنقل في النظام
 abstract final class AppRoutes {
@@ -24,6 +27,13 @@ abstract final class AppRoutes {
   static const String expenses = '/expenses';
   static const String users = '/users';
   static const String settings = '/settings';
+  static const String suppliers = '/suppliers';
+  static const String purchaseReceive = '/purchase-receive';
+  static const String customers = '/customers';
+  static const String shifts = '/shifts';
+  static const String rawMaterials = '/raw-materials';
+  static const String accounting = '/accounting';
+  static const String employees = '/employees';
 }
 
 /// عناصر الـ Navigation
@@ -89,6 +99,48 @@ const List<NavItem> mainNavItems = [
 /// قائمة التنقل الثانوية (إدارة)
 const List<NavItem> managementNavItems = [
   NavItem(
+    route: AppRoutes.suppliers,
+    label: AppStrings.navSuppliers,
+    icon: Icons.local_shipping_outlined,
+    activeIcon: Icons.local_shipping_rounded,
+  ),
+  NavItem(
+    route: AppRoutes.purchaseReceive,
+    label: AppStrings.navPurchaseReceive,
+    icon: Icons.move_to_inbox_outlined,
+    activeIcon: Icons.move_to_inbox_rounded,
+  ),
+  NavItem(
+    route: AppRoutes.customers,
+    label: AppStrings.navCustomers,
+    icon: Icons.delivery_dining_outlined,
+    activeIcon: Icons.delivery_dining_rounded,
+  ),
+  NavItem(
+    route: AppRoutes.shifts,
+    label: AppStrings.navShifts,
+    icon: Icons.point_of_sale_outlined,
+    activeIcon: Icons.point_of_sale_rounded,
+  ),
+  NavItem(
+    route: AppRoutes.rawMaterials,
+    label: AppStrings.navRawMaterials,
+    icon: Icons.science_outlined,
+    activeIcon: Icons.science_rounded,
+  ),
+  NavItem(
+    route: AppRoutes.accounting,
+    label: AppStrings.navAccounting,
+    icon: Icons.account_balance_outlined,
+    activeIcon: Icons.account_balance_rounded,
+  ),
+  NavItem(
+    route: AppRoutes.employees,
+    label: AppStrings.navEmployees,
+    icon: Icons.badge_outlined,
+    activeIcon: Icons.badge_rounded,
+  ),
+  NavItem(
     route: AppRoutes.reports,
     label: AppStrings.navReports,
     icon: Icons.bar_chart_outlined,
@@ -131,6 +183,23 @@ Widget buildRouteWidget(String route) {
     AppRoutes.expenses => const ExpensesScreen(),
     AppRoutes.users => const UsersScreen(),
     AppRoutes.settings => const SettingsScreen(),
+    AppRoutes.suppliers => const ManagementSectionScreen(
+        section: ManagementSection.suppliers,
+      ),
+    AppRoutes.customers => const ManagementSectionScreen(
+        section: ManagementSection.customers,
+      ),
+    AppRoutes.shifts => const ShiftScreen(),
+    AppRoutes.purchaseReceive => const PurchaseReceiveScreen(),
+    AppRoutes.rawMaterials => const ManagementSectionScreen(
+        section: ManagementSection.rawMaterials,
+      ),
+    AppRoutes.accounting => const ManagementSectionScreen(
+        section: ManagementSection.accounting,
+      ),
+    AppRoutes.employees => const ManagementSectionScreen(
+        section: ManagementSection.employees,
+      ),
     _ => PlaceholderScreen(title: _routeLabel(route), route: route),
   };
 }
@@ -144,6 +213,13 @@ String _routeLabel(String route) {
     AppRoutes.expenses: AppStrings.navExpenses,
     AppRoutes.users: AppStrings.navUsers,
     AppRoutes.settings: AppStrings.navSettings,
+    AppRoutes.suppliers: AppStrings.navSuppliers,
+    AppRoutes.customers: AppStrings.navCustomers,
+    AppRoutes.shifts: AppStrings.navShifts,
+    AppRoutes.purchaseReceive: AppStrings.navPurchaseReceive,
+    AppRoutes.rawMaterials: AppStrings.navRawMaterials,
+    AppRoutes.accounting: AppStrings.navAccounting,
+    AppRoutes.employees: AppStrings.navEmployees,
   };
   return labels[route] ?? route;
 }

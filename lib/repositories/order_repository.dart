@@ -1,4 +1,5 @@
 import '../core/database/database_helper.dart';
+import '../core/services/session_service.dart';
 import '../models/order.dart';
 
 class OrderRepository {
@@ -8,12 +9,65 @@ class OrderRepository {
     required Order order,
     required List<OrderItem> items,
   }) async {
+    // اربط الأوردر بالشيفت المفتوح حاليًا (لو موجود) علشان يدخل في إحصائيات الشيفت
+    final currentShift = await _db.getCurrentShift();
+    final currentUser = SessionService.instance.currentUser;
+    if (currentShift != null &&
+        currentUser?.id != currentShift['user_id'] as String?) {
+      throw StateError('لا يمكن تسجيل عملية أثناء شيفت مستخدم آخر');
+    }
+
     await _db.runTransaction((txn) async {
-      await txn.insert('orders', order.toMap());
+      final orderMap = order.toMap();
+      if (currentShift != null) {
+        orderMap['shift_id'] = currentShift['id'];
+      }
+      await txn.insert('orders', orderMap);
+
+      final debitCode =
+          order.paymentMethod == PaymentMethod.cash ? '1.1' : '1.2';
+      final revenueCode = order.orderType == OrderType.delivery
+          ? '4.3'
+          : order.paymentMethod == PaymentMethod.cash
+              ? '4.1'
+              : '4.2';
+      final debitAccount = await _db.getAccountIdByCode(txn, debitCode);
+      final revenueAccount = await _db.getAccountIdByCode(txn, revenueCode);
+      if (debitAccount != null && revenueAccount != null) {
+        await _db.postJournalEntryInTransaction(
+          txn,
+          accountId: debitAccount,
+          debit: order.finalAmount,
+          description: 'تحصيل طلب #${order.orderNumber}',
+          refType: 'sale',
+          refId: order.id,
+          shiftId: currentShift?['id'] as String?,
+          userId: order.userId,
+        );
+        await _db.postJournalEntryInTransaction(
+          txn,
+          accountId: revenueAccount,
+          credit: order.finalAmount,
+          description: 'إيراد طلب #${order.orderNumber}',
+          refType: 'sale',
+          refId: order.id,
+          shiftId: currentShift?['id'] as String?,
+          userId: order.userId,
+        );
+      }
+
       for (final item in items) {
         await txn.insert('order_items', item.toMap());
+        // خصم الخامات المستخدمة في تحضير الصنف (لو له وصفة مسجّلة)
+        await _db.consumeRawMaterialsForOrder(
+          txn,
+          item.productId,
+          item.quantity,
+          orderId: order.id,
+        );
       }
     });
+
     return order.copyWith(items: items);
   }
 
@@ -179,6 +233,10 @@ class OrderRepository {
     );
   }
 
+  /// مبيعات الشيفت الحالي (أو أي شيفت بالـ id)
+  Future<Map<String, dynamic>> getShiftSales(String shiftId) =>
+      _db.getShiftSummary(shiftId);
+
   Future<void> cancelOrder(
     String id, {
     String? reason,
@@ -224,6 +282,7 @@ class OrderRepository {
           'product_id': item.productId,
           'product_name': item.productName,
           'type': 'return',
+          'item_type': 'product',
           'quantity': item.quantity,
           'stock_before': stockBefore,
           'stock_after': stockAfter,
@@ -233,6 +292,15 @@ class OrderRepository {
           'user_id': userId,
           'created_at': DateTime.now().toIso8601String(),
         });
+
+        // 3) إرجاع الخامات اللي كانت اتخصمت لتحضير الصنف ده
+        await _db.restoreRawMaterialsForOrder(
+          txn,
+          item.productId,
+          item.quantity,
+          orderId: id,
+          reason: reason ?? 'إرجاع خامات - إلغاء الطلب',
+        );
       }
     });
   }

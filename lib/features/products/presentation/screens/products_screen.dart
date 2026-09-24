@@ -11,6 +11,7 @@ import '../../../../models/category.dart';
 import '../../../../models/product.dart';
 import '../../../../repositories/category_repository.dart';
 import '../../../../repositories/product_repository.dart';
+import '../../../management/presentation/screens/management_section_screen.dart';
 
 class ProductsScreen extends StatefulWidget {
   const ProductsScreen({super.key});
@@ -49,7 +50,10 @@ class _ProductsScreenState extends State<ProductsScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 && !_isLoadingMore && _hasMore) {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !_isLoadingMore &&
+        _hasMore) {
       _loadMore();
     }
   }
@@ -64,9 +68,14 @@ class _ProductsScreenState extends State<ProductsScreen> {
       final categories = await _categoryRepo.getAll(activeOnly: true);
       List<Product> products;
       if (_searchQuery.isNotEmpty) {
-        products = await _productRepo.search(_searchQuery, limit: _limit, offset: _offset);
+        products = await _productRepo.search(_searchQuery,
+            limit: _limit, offset: _offset);
       } else {
-        products = await _productRepo.getAll(categoryId: _selectedCategoryId, activeOnly: true, limit: _limit, offset: _offset);
+        products = await _productRepo.getAll(
+            categoryId: _selectedCategoryId,
+            activeOnly: true,
+            limit: _limit,
+            offset: _offset);
       }
       if (mounted) {
         setState(() {
@@ -87,9 +96,14 @@ class _ProductsScreenState extends State<ProductsScreen> {
     try {
       List<Product> newProducts;
       if (_searchQuery.isNotEmpty) {
-        newProducts = await _productRepo.search(_searchQuery, limit: _limit, offset: _offset);
+        newProducts = await _productRepo.search(_searchQuery,
+            limit: _limit, offset: _offset);
       } else {
-        newProducts = await _productRepo.getAll(categoryId: _selectedCategoryId, activeOnly: true, limit: _limit, offset: _offset);
+        newProducts = await _productRepo.getAll(
+            categoryId: _selectedCategoryId,
+            activeOnly: true,
+            limit: _limit,
+            offset: _offset);
       }
       if (mounted) {
         setState(() {
@@ -121,6 +135,10 @@ class _ProductsScreenState extends State<ProductsScreen> {
               _loadInitialData();
             },
             onAddProduct: () => _showProductDialog(context),
+            onOpenRecipes: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const RecipesScreen()),
+            ),
           ),
           Expanded(
             child: _isLoading
@@ -158,7 +176,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(AppStrings.btnDelete, style: AppTypography.titleLarge),
-        content: Text('هل تريد حذف "${product.name}"؟\n${AppStrings.msgDeleteConfirm}',
+        content: Text(
+            'هل تريد حذف "${product.name}"؟\n${AppStrings.msgDeleteConfirm}',
             style: AppTypography.bodyMedium),
         actions: [
           TextButton(
@@ -188,7 +207,9 @@ class _ProductsScreenState extends State<ProductsScreen> {
         _loadInitialData();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('لا يمكن الحذف النهائي لأنه مرتبط بحركات أخرى، تم تعطيل الصنف بدلاً من ذلك')),
+            const SnackBar(
+                content: Text(
+                    'لا يمكن الحذف النهائي لأنه مرتبط بحركات أخرى، تم تعطيل الصنف بدلاً من ذلك')),
           );
         }
       }
@@ -219,6 +240,7 @@ class _ProductsToolbar extends StatefulWidget {
     required this.onCategoryChanged,
     required this.onSearchChanged,
     required this.onAddProduct,
+    required this.onOpenRecipes,
   });
 
   final List<Category> categories;
@@ -226,6 +248,7 @@ class _ProductsToolbar extends StatefulWidget {
   final ValueChanged<String?> onCategoryChanged;
   final ValueChanged<String> onSearchChanged;
   final VoidCallback onAddProduct;
+  final VoidCallback onOpenRecipes;
 
   @override
   State<_ProductsToolbar> createState() => _ProductsToolbarState();
@@ -259,7 +282,8 @@ class _ProductsToolbarState extends State<_ProductsToolbar> {
                 controller: _searchCtrl,
                 decoration: InputDecoration(
                   hintText: AppStrings.productSearchHint,
-                  prefixIcon: const Icon(Icons.search_rounded, size: AppDimensions.iconMd),
+                  prefixIcon: const Icon(Icons.search_rounded,
+                      size: AppDimensions.iconMd),
                   contentPadding: EdgeInsets.zero,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
@@ -271,7 +295,8 @@ class _ProductsToolbarState extends State<_ProductsToolbar> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                    borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                    borderSide:
+                        const BorderSide(color: AppColors.primary, width: 1.5),
                   ),
                 ),
                 onChanged: widget.onSearchChanged,
@@ -288,8 +313,11 @@ class _ProductsToolbarState extends State<_ProductsToolbar> {
               child: DropdownButtonFormField<String?>(
                 value: widget.selectedCategoryId,
                 decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusSm)),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  border: OutlineInputBorder(
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.radiusSm)),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                     borderSide: const BorderSide(color: AppColors.border),
@@ -297,7 +325,8 @@ class _ProductsToolbarState extends State<_ProductsToolbar> {
                 ),
                 hint: Text('كل التصنيفات', style: AppTypography.bodyMedium),
                 items: [
-                  const DropdownMenuItem(value: null, child: Text('كل التصنيفات')),
+                  const DropdownMenuItem(
+                      value: null, child: Text('كل التصنيفات')),
                   ...widget.categories.map((cat) => DropdownMenuItem(
                         value: cat.id,
                         child: Text(cat.name, style: AppTypography.bodyMedium),
@@ -309,14 +338,22 @@ class _ProductsToolbarState extends State<_ProductsToolbar> {
           ),
           const SizedBox(width: AppDimensions.space12),
 
-          // ─── زر الإضافة ───────────────────────────────────────────
+          // ─── أدوات الأصناف ────────────────────────────────────────
+          OutlinedButton.icon(
+            onPressed: widget.onOpenRecipes,
+            icon: const Icon(Icons.menu_book_outlined),
+            label: const Text('الوصفات والتكلفة'),
+            style: OutlinedButton.styleFrom(minimumSize: const Size(0, 40)),
+          ),
+          const SizedBox(width: AppDimensions.space8),
           ElevatedButton.icon(
             onPressed: widget.onAddProduct,
             icon: const Icon(Icons.add_rounded),
             label: const Text(AppStrings.productAddNew),
             style: ElevatedButton.styleFrom(
               minimumSize: const Size(0, 40),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusMd)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusMd)),
             ),
           ),
         ],
@@ -346,7 +383,8 @@ class _ProductTable extends StatelessWidget {
   final ValueChanged<Product> onDelete;
 
   String _categoryName(String catId) {
-    final cat = categories.firstWhere((c) => c.id == catId, orElse: () => Category(id: '', name: '—', createdAt: DateTime.now()));
+    final cat = categories.firstWhere((c) => c.id == catId,
+        orElse: () => Category(id: '', name: '—', createdAt: DateTime.now()));
     return cat.name;
   }
 
@@ -359,10 +397,13 @@ class _ProductTable extends StatelessWidget {
         children: [
           // ─── رأس الجدول ──────────────────────────────────────────
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space16, vertical: AppDimensions.space10),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.space16,
+                vertical: AppDimensions.space10),
             decoration: BoxDecoration(
               color: AppColors.surfaceVariant,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(AppDimensions.radiusMd)),
+              borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(AppDimensions.radiusMd)),
               border: const Border(
                 top: BorderSide(color: AppColors.border),
                 left: BorderSide(color: AppColors.border),
@@ -385,12 +426,14 @@ class _ProductTable extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 border: Border.all(color: AppColors.border),
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(AppDimensions.radiusMd)),
+                borderRadius: const BorderRadius.vertical(
+                    bottom: Radius.circular(AppDimensions.radiusMd)),
               ),
               child: ListView.separated(
                 controller: scrollController,
                 itemCount: products.length + (isLoadingMore ? 1 : 0),
-                separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.divider),
+                separatorBuilder: (_, __) =>
+                    const Divider(height: 1, color: AppColors.divider),
                 itemBuilder: (ctx, i) {
                   if (i == products.length) {
                     return const Padding(
@@ -415,7 +458,8 @@ class _ProductTable extends StatelessWidget {
             padding: const EdgeInsets.only(top: AppDimensions.space8),
             child: Text(
               '${products.length} صنف',
-              style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
+              style: AppTypography.caption
+                  .copyWith(color: AppColors.textSecondary),
             ),
           ),
         ],
@@ -474,7 +518,8 @@ class _ProductRowState extends State<_ProductRow> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         color: _hovered ? AppColors.surfaceVariant : Colors.transparent,
-        padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space16, vertical: AppDimensions.space12),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.space16, vertical: AppDimensions.space12),
         child: Row(
           children: [
             Expanded(
@@ -486,9 +531,11 @@ class _ProductRowState extends State<_ProductRow> {
                     height: 36,
                     decoration: BoxDecoration(
                       color: AppColors.primary.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.radiusSm),
                     ),
-                    child: const Icon(Icons.fastfood_outlined, size: 18, color: AppColors.primary),
+                    child: const Icon(Icons.fastfood_outlined,
+                        size: 18, color: AppColors.primary),
                   ),
                   const SizedBox(width: AppDimensions.space10),
                   Expanded(
@@ -504,7 +551,8 @@ class _ProductRowState extends State<_ProductRow> {
                       child: Container(
                         margin: const EdgeInsets.only(right: 4),
                         padding: const EdgeInsets.all(2),
-                        child: const Icon(Icons.warning_amber_rounded, size: 16, color: AppColors.warning),
+                        child: const Icon(Icons.warning_amber_rounded,
+                            size: 16, color: AppColors.warning),
                       ),
                     ),
                 ],
@@ -512,13 +560,16 @@ class _ProductRowState extends State<_ProductRow> {
             ),
             Expanded(
               flex: 2,
-              child: Text(widget.categoryName, style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
+              child: Text(widget.categoryName,
+                  style: AppTypography.bodyMedium
+                      .copyWith(color: AppColors.textSecondary)),
             ),
             Expanded(
               flex: 2,
               child: Text(
                 '${p.price.toStringAsFixed(2)} ${AppStrings.currency}',
-                style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600, color: AppColors.primary),
+                style: AppTypography.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600, color: AppColors.primary),
               ),
             ),
             Expanded(
@@ -539,12 +590,18 @@ class _ProductRowState extends State<_ProductRow> {
                     ),
                   ),
                   Tooltip(
-                    message: p.isActive ? AppStrings.btnDeactivate : AppStrings.btnActivate,
+                    message: p.isActive
+                        ? AppStrings.btnDeactivate
+                        : AppStrings.btnActivate,
                     child: IconButton(
                       icon: Icon(
-                        p.isActive ? Icons.toggle_on_outlined : Icons.toggle_off_outlined,
+                        p.isActive
+                            ? Icons.toggle_on_outlined
+                            : Icons.toggle_off_outlined,
                         size: 18,
-                        color: p.isActive ? AppColors.success : AppColors.textSecondary,
+                        color: p.isActive
+                            ? AppColors.success
+                            : AppColors.textSecondary,
                       ),
                       onPressed: widget.onToggleActive,
                     ),
@@ -634,7 +691,7 @@ class _ProductDialogState extends State<ProductDialog> {
     '🥐', '🍳', '🍴', '🧆', '🍰', '🎂',
     '☕', '🍹', '🥤', '🍺', '🧃', '🧣',
     '🥩', '🐟', '🦐', '🦞', '🍎', '🍋',
-    
+
     // 🍟 بطاطس وسندوتشات
     '🍟', // بطاطس
     '🧀', // شيدر / جبنة
@@ -651,9 +708,12 @@ class _ProductDialogState extends State<ProductDialog> {
     super.initState();
     final p = widget.product;
     _nameCtrl = TextEditingController(text: p?.name ?? '');
-    _priceCtrl = TextEditingController(text: p != null ? p.price.toStringAsFixed(2) : '');
-    _stockCtrl = TextEditingController(text: p != null ? p.stock.toStringAsFixed(0) : '0');
-    _selectedCategoryId = p?.categoryId ?? (widget.categories.isNotEmpty ? widget.categories.first.id : null);
+    _priceCtrl = TextEditingController(
+        text: p != null ? p.price.toStringAsFixed(2) : '');
+    _stockCtrl = TextEditingController(
+        text: p != null ? p.stock.toStringAsFixed(0) : '0');
+    _selectedCategoryId = p?.categoryId ??
+        (widget.categories.isNotEmpty ? widget.categories.first.id : null);
     _selectedIcon = p?.icon ?? '🍔';
     _isActive = p?.isActive ?? true;
   }
@@ -728,221 +788,256 @@ class _ProductDialogState extends State<ProductDialog> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                  // ─── العنوان ────────────────────────────────────────
-                  Row(
-                    children: [
-                      Text(
-                        isEdit ? AppStrings.productEdit : AppStrings.productAddNew,
-                        style: AppTypography.headlineSmall,
+                // ─── العنوان ────────────────────────────────────────
+                Row(
+                  children: [
+                    Text(
+                      isEdit
+                          ? AppStrings.productEdit
+                          : AppStrings.productAddNew,
+                      style: AppTypography.headlineSmall,
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppDimensions.space24),
+
+                // ─── الاسم + التصنيف ────────────────────────────────
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: _FormField(
+                        label: AppStrings.productName,
+                        controller: _nameCtrl,
+                        autofocus: true,
+                        validator: (v) =>
+                            v!.trim().isEmpty ? 'الاسم مطلوب' : null,
                       ),
-                      const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.close_rounded),
-                        onPressed: () => Navigator.pop(context),
+                    ),
+                    const SizedBox(width: AppDimensions.space12),
+                    Expanded(
+                      flex: 2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(AppStrings.productCategory,
+                              style: AppTypography.bodySmall
+                                  .copyWith(fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 6),
+                          DropdownButtonFormField<String>(
+                            value: _selectedCategoryId,
+                            items: widget.categories
+                                .map((cat) => DropdownMenuItem(
+                                      value: cat.id,
+                                      child: Text(cat.name,
+                                          style: AppTypography.bodyMedium),
+                                    ))
+                                .toList(),
+                            onChanged: (v) =>
+                                setState(() => _selectedCategoryId = v),
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 10),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(
+                                      AppDimensions.radiusSm)),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: AppDimensions.space24),
-  
-                  // ─── الاسم + التصنيف ────────────────────────────────
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: _FormField(
-                          label: AppStrings.productName,
-                          controller: _nameCtrl,
-                          autofocus: true,
-                          validator: (v) => v!.trim().isEmpty ? 'الاسم مطلوب' : null,
-                        ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppDimensions.space16),
+
+                // ─── اختر ايقونة ────────────────────────────────────
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('اختر أيقونة الصنف',
+                        style: AppTypography.bodySmall
+                            .copyWith(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceVariant,
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.radiusMd),
+                        border: Border.all(color: AppColors.border),
                       ),
-                      const SizedBox(width: AppDimensions.space12),
-                      Expanded(
-                        flex: 2,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(AppStrings.productCategory, style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600)),
-                            const SizedBox(height: 6),
-                            DropdownButtonFormField<String>(
-                              value: _selectedCategoryId,
-                              items: widget.categories.map((cat) => DropdownMenuItem(
-                                value: cat.id,
-                                child: Text(cat.name, style: AppTypography.bodyMedium),
-                              )).toList(),
-                              onChanged: (v) => setState(() => _selectedCategoryId = v),
-                              decoration: InputDecoration(
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusSm)),
+                      padding: const EdgeInsets.all(8),
+                      child: Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: _icons.map((icon) {
+                          final isSelected = icon == _selectedIcon;
+                          return GestureDetector(
+                            onTap: () => setState(() => _selectedIcon = icon),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppColors.primary.withValues(alpha: 0.2)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : Colors.transparent,
+                                  width: 2,
+                                ),
+                              ),
+                              child: Center(
+                                child: Text(icon,
+                                    style: const TextStyle(fontSize: 20)),
                               ),
                             ),
-                          ],
-                        ),
+                          );
+                        }).toList(),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: AppDimensions.space16),
-  
-                  // ─── اختر ايقونة ────────────────────────────────────
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('اختر أيقونة الصنف', style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 8),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.surfaceVariant,
-                          borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        padding: const EdgeInsets.all(8),
-                        child: Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: _icons.map((icon) {
-                            final isSelected = icon == _selectedIcon;
-                            return GestureDetector(
-                              onTap: () => setState(() => _selectedIcon = icon),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 150),
-                                width: 38,
-                                height: 38,
-                                decoration: BoxDecoration(
-                                  color: isSelected ? AppColors.primary.withValues(alpha: 0.2) : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: isSelected ? AppColors.primary : Colors.transparent,
-                                    width: 2,
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Text(icon, style: const TextStyle(fontSize: 20)),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppDimensions.space16),
+
+                // ─── السعر والكمية ────────────────────────────────
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: _FormField(
+                        label: AppStrings.productPrice,
+                        controller: _priceCtrl,
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return 'السعر مطلوب';
+                          if (double.tryParse(_toLatinDigits(v)) == null)
+                            return 'أدخل رقم صحيح';
+                          return null;
+                        },
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: AppDimensions.space16),
-  
-                  // ─── السعر والكمية ────────────────────────────────
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: _FormField(
-                          label: AppStrings.productPrice,
-                          controller: _priceCtrl,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          validator: (v) {
-                            if (v == null || v.isEmpty) return 'السعر مطلوب';
-                            if (double.tryParse(_toLatinDigits(v)) == null) return 'أدخل رقم صحيح';
-                            return null;
-                          },
-                        ),
+                    ),
+                    const SizedBox(width: AppDimensions.space12),
+                    Expanded(
+                      child: _FormField(
+                        label: 'الكمية في المخزون',
+                        controller: _stockCtrl,
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return 'الكمية مطلوبة';
+                          if (double.tryParse(_toLatinDigits(v)) == null)
+                            return 'أدخل رقم صحيح';
+                          return null;
+                        },
                       ),
-                      const SizedBox(width: AppDimensions.space12),
-                      Expanded(
-                        child: _FormField(
-                          label: 'الكمية في المخزون',
-                          controller: _stockCtrl,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          validator: (v) {
-                            if (v == null || v.isEmpty) return 'الكمية مطلوبة';
-                            if (double.tryParse(_toLatinDigits(v)) == null) return 'أدخل رقم صحيح';
-                            return null;
-                          },
-                        ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppDimensions.space16),
+
+                // ─── الحالة ──────────────────────────────────────────
+                Row(
+                  children: [
+                    Switch(
+                      value: _isActive,
+                      activeColor: AppColors.success,
+                      onChanged: (v) => setState(() => _isActive = v),
+                    ),
+                    const SizedBox(width: AppDimensions.space8),
+                    Text(
+                      _isActive
+                          ? AppStrings.productActive
+                          : AppStrings.productInactive,
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: _isActive
+                            ? AppColors.success
+                            : AppColors.textSecondary,
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: AppDimensions.space16),
-  
-                  // ─── الحالة ──────────────────────────────────────────
-                  Row(
-                    children: [
-                      Switch(
-                        value: _isActive,
-                        activeColor: AppColors.success,
-                        onChanged: (v) => setState(() => _isActive = v),
-                      ),
-                      const SizedBox(width: AppDimensions.space8),
-                      Text(
-                        _isActive ? AppStrings.productActive : AppStrings.productInactive,
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: _isActive ? AppColors.success : AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppDimensions.space24),
-  
-                  // ─── أزرار ───────────────────────────────────────────
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text(AppStrings.btnCancel),
-                      ),
-                      const SizedBox(width: AppDimensions.space12),
-                      ElevatedButton(
-                        onPressed: _saving ? null : _save,
-                        child: _saving
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                            : const Text(AppStrings.btnSave),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppDimensions.space24),
+
+                // ─── أزرار ───────────────────────────────────────────
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text(AppStrings.btnCancel),
+                    ),
+                    const SizedBox(width: AppDimensions.space12),
+                    ElevatedButton(
+                      onPressed: _saving ? null : _save,
+                      child: _saving
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Text(AppStrings.btnSave),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
-      );
-    }
+      ),
+    );
   }
-  
-  class _FormField extends StatelessWidget {
-    const _FormField({
-      required this.label,
-      required this.controller,
-      this.keyboardType,
-      this.inputFormatters,
-      this.validator,
-      this.autofocus = false,
-    });
-  
-    final String label;
-    final TextEditingController controller;
-    final TextInputType? keyboardType;
-    final List<TextInputFormatter>? inputFormatters;
-    final String? Function(String?)? validator;
-    final bool autofocus;
-  
-    @override
-    Widget build(BuildContext context) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 6),
-          TextFormField(
-            controller: controller,
-            keyboardType: keyboardType,
-            inputFormatters: inputFormatters,
-            validator: validator,
-            autofocus: autofocus,
-            style: AppTypography.bodyMedium,
-            decoration: InputDecoration(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusSm)),
-            ),
+}
+
+class _FormField extends StatelessWidget {
+  const _FormField({
+    required this.label,
+    required this.controller,
+    this.keyboardType,
+    this.inputFormatters,
+    this.validator,
+    this.autofocus = false,
+  });
+
+  final String label;
+  final TextEditingController controller;
+  final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
+  final String? Function(String?)? validator;
+  final bool autofocus;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style:
+                AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 6),
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
+          validator: validator,
+          autofocus: autofocus,
+          style: AppTypography.bodyMedium,
+          decoration: InputDecoration(
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppDimensions.radiusSm)),
           ),
-        ],
-      );
-    }
+        ),
+      ],
+    );
   }
+}

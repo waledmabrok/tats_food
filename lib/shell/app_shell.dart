@@ -4,6 +4,7 @@ import '../core/widgets/app_sidebar.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_typography.dart';
 import '../core/services/session_service.dart';
+import '../repositories/user_repository.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
 import '../features/cashier/presentation/screens/cashier_screen.dart';
 import '../models/app_user.dart';
@@ -54,7 +55,11 @@ class _AppShellState extends State<AppShell> {
         backgroundColor: AppColors.background,
         body: Column(
           children: [
-            _CashierTopBar(userName: widget.user.name, onLogout: _logout),
+            _CashierTopBar(
+              userName: widget.user.name,
+              onLogout: _logout,
+              onChangePassword: () => _showChangePasswordDialog(),
+            ),
             const Expanded(child: CashierScreen()),
           ],
         ),
@@ -106,14 +111,26 @@ class _AppShellState extends State<AppShell> {
       ),
     );
   }
+
+  Future<void> _showChangePasswordDialog() async {
+    await showDialog<void>(
+      context: context,
+      builder: (_) => _ChangePasswordDialog(user: widget.user),
+    );
+  }
 }
 
 // ─── شريط الكاشير العلوي ───────────────────────────────────────────────────
 class _CashierTopBar extends StatelessWidget {
-  const _CashierTopBar({required this.userName, required this.onLogout});
+  const _CashierTopBar({
+    required this.userName,
+    required this.onLogout,
+    required this.onChangePassword,
+  });
 
   final String userName;
   final VoidCallback onLogout;
+  final VoidCallback onChangePassword;
 
   @override
   Widget build(BuildContext context) {
@@ -167,6 +184,13 @@ class _CashierTopBar extends StatelessWidget {
 
           const SizedBox(width: 16),
 
+          IconButton(
+            tooltip: 'تغيير كلمة المرور',
+            onPressed: onChangePassword,
+            icon: const Icon(Icons.lock_reset_rounded),
+            color: const Color(0xFF94A3B8),
+          ),
+
           // زر الخروج
           TextButton.icon(
             onPressed: onLogout,
@@ -179,6 +203,94 @@ class _CashierTopBar extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ChangePasswordDialog extends StatefulWidget {
+  const _ChangePasswordDialog({required this.user});
+
+  final AppUser user;
+
+  @override
+  State<_ChangePasswordDialog> createState() => _ChangePasswordDialogState();
+}
+
+class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
+  final _repo = UserRepository();
+  final _current = TextEditingController();
+  final _next = TextEditingController();
+  final _confirm = TextEditingController();
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    _current.dispose();
+    _next.dispose();
+    _confirm.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (_next.text.trim().length < 4 ||
+        _next.text.trim() != _confirm.text.trim()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('كلمة المرور الجديدة غير صحيحة أو غير متطابقة')),
+      );
+      return;
+    }
+    setState(() => _saving = true);
+    final changed = await _repo.changePin(
+      userId: widget.user.id,
+      currentPin: _current.text.trim(),
+      newPin: _next.text.trim(),
+    );
+    if (!mounted) return;
+    if (changed) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تم تغيير كلمة المرور بنجاح')),
+      );
+    } else {
+      setState(() => _saving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('كلمة المرور الحالية غير صحيحة')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('تغيير كلمة المرور'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+              controller: _current,
+              obscureText: true,
+              decoration:
+                  const InputDecoration(labelText: 'كلمة المرور الحالية')),
+          TextField(
+              controller: _next,
+              obscureText: true,
+              decoration:
+                  const InputDecoration(labelText: 'كلمة المرور الجديدة')),
+          TextField(
+              controller: _confirm,
+              obscureText: true,
+              decoration: const InputDecoration(
+                  labelText: 'تأكيد كلمة المرور الجديدة')),
+        ],
+      ),
+      actions: [
+        TextButton(
+            onPressed: _saving ? null : () => Navigator.pop(context),
+            child: const Text('إلغاء')),
+        ElevatedButton(
+            onPressed: _saving ? null : _save, child: const Text('حفظ')),
+      ],
     );
   }
 }

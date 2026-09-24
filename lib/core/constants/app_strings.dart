@@ -20,6 +20,13 @@ abstract final class AppStrings {
   static const String navExpenses = 'المصروفات';
   static const String navUsers = 'المستخدمون';
   static const String navSettings = 'الإعدادات';
+  static const String navSuppliers = 'الموردون';
+  static const String navPurchaseReceive = 'استلام بضاعة';
+  static const String navCustomers = 'العملاء والدليفري';
+  static const String navShifts = 'الشيفتات والدرج';
+  static const String navRawMaterials = 'الخامات والوصفات';
+  static const String navAccounting = 'الحسابات';
+  static const String navEmployees = 'الموظفون والرواتب';
 
   // ─── الأقسام الفرعية للـ Sidebar ──────────────────────────────────
   static const String sidebarMainMenu = 'القائمة الرئيسية';

@@ -33,6 +33,21 @@ enum OrderStatus {
   }
 }
 
+enum OrderType {
+  delivery('دليفري'),
+  takeaway('تيك أواي');
+
+  const OrderType(this.label);
+  final String label;
+
+  static OrderType fromString(String? value) {
+    return OrderType.values.firstWhere(
+      (type) => type.name == value,
+      orElse: () => OrderType.takeaway,
+    );
+  }
+}
+
 /// نموذج عنصر الطلب
 class OrderItem {
   final String id;
@@ -90,6 +105,10 @@ class Order {
   final double paidAmount;
   final double changeAmount;
   final PaymentMethod paymentMethod;
+  final OrderType orderType;
+  final String? customerId;
+  final String? deliveryAddress;
+  final double deliveryFee;
   final String? paymentRef;
   final OrderStatus status;
   final String? notes;
@@ -107,6 +126,10 @@ class Order {
     required this.paidAmount,
     this.changeAmount = 0,
     required this.paymentMethod,
+    this.orderType = OrderType.takeaway,
+    this.customerId,
+    this.deliveryAddress,
+    this.deliveryFee = 0,
     this.paymentRef,
     this.status = OrderStatus.completed,
     this.notes,
@@ -126,6 +149,10 @@ class Order {
       paidAmount: (map['paid_amount'] as num).toDouble(),
       changeAmount: (map['change_amount'] as num).toDouble(),
       paymentMethod: PaymentMethod.fromString(map['payment_method'] as String),
+      orderType: OrderType.fromString(map['order_type'] as String?),
+      customerId: map['customer_id'] as String?,
+      deliveryAddress: map['delivery_address'] as String?,
+      deliveryFee: (map['delivery_fee'] as num?)?.toDouble() ?? 0,
       paymentRef: map['payment_ref'] as String?,
       status: OrderStatus.fromString(map['status'] as String),
       notes: map['notes'] as String?,
@@ -146,6 +173,10 @@ class Order {
       'paid_amount': paidAmount,
       'change_amount': changeAmount,
       'payment_method': paymentMethod.name,
+      'order_type': orderType.name,
+      'customer_id': customerId,
+      'delivery_address': deliveryAddress,
+      'delivery_fee': deliveryFee,
       'payment_ref': paymentRef,
       'status': status.name,
       'notes': notes,

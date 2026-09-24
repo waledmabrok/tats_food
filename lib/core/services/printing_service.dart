@@ -131,7 +131,6 @@ class PrintingService {
                   textAlign: pw.TextAlign.center,
                 ),
               ),
-
               pw.Container(
                 alignment: pw.Alignment.center,
                 padding: const pw.EdgeInsets.symmetric(
@@ -156,7 +155,6 @@ class PrintingService {
                   textAlign: pw.TextAlign.center,
                 ),
               ),
-
               pw.Container(
                 alignment: pw.Alignment.center,
                 padding: const pw.EdgeInsets.symmetric(
@@ -319,8 +317,11 @@ class PrintingService {
 
     final restaurantName =
         (restaurantNameRaw != null && restaurantNameRaw.trim().isNotEmpty)
-        ? restaurantNameRaw.trim()
-        : AppStrings.appName;
+            ? restaurantNameRaw.trim()
+            : AppStrings.appName;
+    final customer = order.customerId == null
+        ? null
+        : await DatabaseHelper.instance.getCustomerById(order.customerId!);
 
     final pdf = pw.Document();
 
@@ -410,6 +411,46 @@ class PrintingService {
 
                 pw.SizedBox(height: 8),
 
+                if (order.orderType == OrderType.delivery &&
+                    customer != null) ...[
+                  pw.Text(
+                    'العميل: ${customer['name']}',
+                    style: pw.TextStyle(font: _arabicFontBold, fontSize: 10),
+                    textAlign: pw.TextAlign.right,
+                  ),
+                  pw.Text(
+                    'الهاتف: ${customer['phone']}  •  العنوان: ${customer['address'] ?? order.deliveryAddress ?? '—'}',
+                    style: pw.TextStyle(font: _arabicFont, fontSize: 9),
+                    textAlign: pw.TextAlign.right,
+                  ),
+                  pw.SizedBox(height: 6),
+                ],
+
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text(
+                      'نوع الطلب:',
+                      style: pw.TextStyle(font: _arabicFont, fontSize: 10),
+                    ),
+                    pw.Text(
+                      order.orderType.label,
+                      style: pw.TextStyle(font: _arabicFontBold, fontSize: 10),
+                    ),
+                  ],
+                ),
+                if (order.orderType == OrderType.delivery &&
+                    order.deliveryAddress != null) ...[
+                  pw.SizedBox(height: 2),
+                  pw.Text(
+                    'بيانات التوصيل: ${order.deliveryAddress}',
+                    style: pw.TextStyle(font: _arabicFont, fontSize: 10),
+                    textAlign: pw.TextAlign.right,
+                  ),
+                ],
+
+                pw.SizedBox(height: 6),
+
                 // ==================================================
                 // جدول الأصناف
                 // ==================================================
@@ -438,9 +479,7 @@ class PrintingService {
                       ),
                     ],
                   ),
-
                   pw.SizedBox(height: 2),
-
                   pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
@@ -454,7 +493,6 @@ class PrintingService {
                       ),
                     ],
                   ),
-
                   pw.SizedBox(height: 4),
                 ],
 
@@ -512,7 +550,6 @@ class PrintingService {
 
                 if (order.changeAmount > 0) ...[
                   pw.SizedBox(height: 2),
-
                   pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
@@ -576,8 +613,8 @@ class PrintingService {
 
     final restaurantName =
         (restaurantNameRaw != null && restaurantNameRaw.trim().isNotEmpty)
-        ? restaurantNameRaw.trim()
-        : AppStrings.appName;
+            ? restaurantNameRaw.trim()
+            : AppStrings.appName;
 
     final pdf = pw.Document();
 
@@ -640,6 +677,18 @@ class PrintingService {
                   style: pw.TextStyle(font: _arabicFont, fontSize: 10),
                 ),
 
+                pw.SizedBox(height: 4),
+                pw.Text(
+                  'نوع الطلب: ${order.orderType.label}',
+                  style: pw.TextStyle(font: _arabicFontBold, fontSize: 12),
+                ),
+                if (order.orderType == OrderType.delivery &&
+                    order.deliveryAddress != null)
+                  pw.Text(
+                    'العنوان: ${order.deliveryAddress}',
+                    style: pw.TextStyle(font: _arabicFontBold, fontSize: 12),
+                  ),
+
                 pw.SizedBox(height: 6),
 
                 pw.Divider(thickness: 2),
@@ -651,16 +700,12 @@ class PrintingService {
 
                 if (order.notes != null && order.notes!.isNotEmpty) ...[
                   pw.SizedBox(height: 6),
-
                   pw.Divider(thickness: 1, borderStyle: pw.BorderStyle.dashed),
-
                   pw.SizedBox(height: 4),
-
                   pw.Text(
                     'ملاحظات:',
                     style: pw.TextStyle(font: _arabicFontBold, fontSize: 12),
                   ),
-
                   pw.Text(
                     order.notes!,
                     style: pw.TextStyle(font: _arabicFont, fontSize: 12),
@@ -685,6 +730,86 @@ class PrintingService {
     await Printing.layoutPdf(
       onLayout: (PdfPageFormat format) async => pdf.save(),
       name: 'Kitchen_${order.orderNumber}',
+    );
+  }
+
+  Future<void> printShiftClosingReport({
+    required String userName,
+    required Map<String, dynamic> result,
+  }) async {
+    await _initFonts();
+    await _initLogo();
+    final pdf = pw.Document();
+    final totalSales = (result['total_sales'] as num).toDouble();
+    final expenses = (result['expenses_total'] as num).toDouble();
+    final expected = (result['expected_drawer_cash'] as num).toDouble();
+    final actual = (result['actual_closing_cash'] as num).toDouble();
+    final difference = (result['difference'] as num).toDouble();
+    final orders = result['orders_count'] as int;
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat(
+          _receiptWidthMm * PdfPageFormat.mm,
+          double.infinity,
+        ),
+        margin: const pw.EdgeInsets.all(10),
+        build: (_) => pw.Directionality(
+          textDirection: pw.TextDirection.rtl,
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+            children: [
+              _buildLogo(size: 44),
+              pw.Center(
+                child: pw.Text(
+                  'تقرير إقفال الشيفت',
+                  style: pw.TextStyle(font: _arabicFontBold, fontSize: 16),
+                ),
+              ),
+              pw.SizedBox(height: 8),
+              pw.Text('المسؤول: $userName',
+                  style: pw.TextStyle(font: _arabicFont, fontSize: 11)),
+              pw.Text('التاريخ: ${_formatDate(DateTime.now())}',
+                  style: pw.TextStyle(font: _arabicFont, fontSize: 11)),
+              pw.Divider(),
+              _shiftRow('عدد الطلبات', orders.toString()),
+              _shiftRow('إجمالي المبيعات',
+                  '${_formatPrice(totalSales)} ${AppStrings.currency}'),
+              _shiftRow('إجمالي المصروفات',
+                  '${_formatPrice(expenses)} ${AppStrings.currency}'),
+              _shiftRow('النقد المتوقع',
+                  '${_formatPrice(expected)} ${AppStrings.currency}'),
+              _shiftRow('النقد الفعلي',
+                  '${_formatPrice(actual)} ${AppStrings.currency}'),
+              pw.Divider(),
+              _shiftRow(
+                difference == 0 ? 'النتيجة' : 'العجز / الزيادة',
+                difference == 0
+                    ? 'الدرج مطابق'
+                    : '${_formatPrice(difference.abs())} ${AppStrings.currency} ${difference > 0 ? 'زيادة' : 'عجز'}',
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await Printing.layoutPdf(
+      onLayout: (format) async => pdf.save(),
+      name: 'Shift_Closing_${DateTime.now().millisecondsSinceEpoch}',
+    );
+  }
+
+  pw.Widget _shiftRow(String label, String value) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.symmetric(vertical: 5),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(label, style: pw.TextStyle(font: _arabicFont, fontSize: 11)),
+          pw.Text(value,
+              style: pw.TextStyle(font: _arabicFontBold, fontSize: 11)),
+        ],
+      ),
     );
   }
 }

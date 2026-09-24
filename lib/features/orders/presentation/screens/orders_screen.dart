@@ -172,12 +172,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _orders.isEmpty
-                ? const EmptyStateWidget(
-                    icon: Icons.receipt_long_outlined,
-                    title: AppStrings.orderNoOrders,
-                    description: AppStrings.orderNoOrdersDesc,
-                  )
-                : _buildTable(),
+                    ? const EmptyStateWidget(
+                        icon: Icons.receipt_long_outlined,
+                        title: AppStrings.orderNoOrders,
+                        description: AppStrings.orderNoOrdersDesc,
+                      )
+                    : _buildTable(),
           ),
         ],
       ),
@@ -528,6 +528,9 @@ class _OrderDetailDialogState extends State<_OrderDetailDialog> {
                       // معلومات الطلب
                       _InfoRow('الكاشير', order.userName ?? '—'),
                       _InfoRow('التاريخ', _formatDateTime(order.createdAt)),
+                      _InfoRow('نوع الطلب', order.orderType.label),
+                      if (order.deliveryAddress != null)
+                        _InfoRow('بيانات التوصيل', order.deliveryAddress!),
                       _InfoRow('طريقة الدفع', order.paymentMethod.label),
                       if (order.paymentRef != null)
                         _InfoRow('الرقم المرجعي', order.paymentRef!),

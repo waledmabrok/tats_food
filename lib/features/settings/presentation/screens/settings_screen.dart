@@ -5,6 +5,7 @@ import '../../../../core/database/database_helper.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimensions.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/theme/theme_controller.dart';
 import '../../../../core/widgets/app_top_bar.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -167,6 +168,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                          AnimatedBuilder(
+  animation: ThemeController.instance,
+  builder: (context, _) {
+    final mode = ThemeController.instance.mode;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'مظهر النظام',
+          style: AppTypography.bodySmall.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: AppDimensions.space8),
+
+        SegmentedButton<ThemeMode>(
+          segments: const [
+            ButtonSegment<ThemeMode>(
+              value: ThemeMode.light,
+              icon: Icon(Icons.light_mode_outlined),
+              label: Text('فاتح'),
+            ),
+            ButtonSegment<ThemeMode>(
+              value: ThemeMode.dark,
+              icon: Icon(Icons.dark_mode_outlined),
+              label: Text('داكن'),
+            ),
+          ],
+          selected: {mode},
+          onSelectionChanged: (selection) {
+            ThemeController.instance.setMode(selection.first);
+          },
+        ),
+
+        const SizedBox(height: AppDimensions.space20),
+      ],
+    );
+  },
+),
                               _buildField(
                                 AppStrings.settingsRestaurantName,
                                 _nameCtrl,
