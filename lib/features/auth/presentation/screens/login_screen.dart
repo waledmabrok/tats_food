@@ -100,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1220),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -145,27 +145,33 @@ class _LoginScreenState extends State<LoginScreen> {
       padding: const EdgeInsets.all(40),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
-        gradient: const LinearGradient(
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-          colors: [Color(0xFF172A46), Color(0xFF0F1A2E)],
-        ),
-        border: Border.all(color: const Color(0xFF263B59)),
+        color: AppColors.surface,
+        border: Border.all(color: AppColors.border),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.cardShadow,
+            blurRadius: 20,
+            offset: Offset(0, 10),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+
           _buildLogo(size: 92),
           const SizedBox(height: 28),
-          Text('طاطس',
-              style: AppTypography.headlineLarge
-                  .copyWith(color: Colors.white, fontSize: 42)),
+          Text(
+            'فود برو',
+            style: AppTypography.headlineLarge
+                .copyWith(color: AppColors.textPrimary, fontSize: 40),
+          ),
           const SizedBox(height: 8),
           Text(
             'كل طلب محسوب. كل شيفت واضح.',
             style: AppTypography.headlineSmall
-                .copyWith(color: AppColors.primaryLight),
+                .copyWith(color: AppColors.primary),
           ),
           const SizedBox(height: 14),
           Text(
@@ -209,10 +215,12 @@ class _LoginScreenState extends State<LoginScreen> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('طاطس',
-                style:
-                    AppTypography.headlineSmall.copyWith(color: Colors.white)),
-            Text('إدارة مطعمك بوضوح', style: AppTypography.bodySmall),
+            Text('فود برو',
+                style: AppTypography.headlineSmall
+                    .copyWith(color: AppColors.textPrimary)),
+            Text('إدارة مطعمك بوضوح',
+                style: AppTypography.bodySmall
+                    .copyWith(color: AppColors.textSecondary)),
           ],
         ),
       ],
@@ -228,9 +236,9 @@ class _LoginScreenState extends State<LoginScreen> {
         borderRadius: BorderRadius.circular(size * 0.24),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.32),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
+            color: AppColors.primary.withValues(alpha: 0.25),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -245,14 +253,14 @@ class _LoginScreenState extends State<LoginScreen> {
     return Container(
       padding: const EdgeInsets.all(30),
       decoration: BoxDecoration(
-        color: const Color(0xFF182438),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFF2B405D)),
-        boxShadow: [
+        border: Border.all(color: AppColors.border),
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.28),
-            blurRadius: 30,
-            offset: const Offset(0, 18),
+            color: Color(0x0D0F172A),
+            blurRadius: 24,
+            offset: Offset(0, 8),
           ),
         ],
       ),
@@ -260,7 +268,8 @@ class _LoginScreenState extends State<LoginScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text('أهلاً بك',
-              style: AppTypography.headlineSmall.copyWith(color: Colors.white)),
+              style: AppTypography.headlineSmall
+                  .copyWith(color: AppColors.textPrimary)),
           const SizedBox(height: 6),
           Text('سجّل دخولك لبدء تشغيل المطعم', style: AppTypography.bodySmall),
           const SizedBox(height: 28),
@@ -403,18 +412,19 @@ class _FeatureBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.06),
+        color: AppColors.surfaceVariant,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: AppColors.border),
       ),
+
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 17, color: AppColors.accent),
+          Icon(icon, size: 17, color: AppColors.primary),
           const SizedBox(width: 7),
           Text(label,
               style:
-                  AppTypography.caption.copyWith(color: AppColors.textPrimary)),
+                  AppTypography.caption.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -451,11 +461,11 @@ class _RoleCard extends StatelessWidget {
           padding: const EdgeInsets.all(11),
           decoration: BoxDecoration(
             color: selected
-                ? AppColors.primary.withValues(alpha: 0.14)
-                : const Color(0xFF111D30),
+                ? AppColors.primary.withValues(alpha: 0.08)
+                : AppColors.surfaceVariant,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: selected ? AppColors.primary : const Color(0xFF30435F),
+              color: selected ? AppColors.primary : AppColors.border,
               width: selected ? 1.5 : 1,
             ),
           ),
@@ -469,11 +479,11 @@ class _RoleCard extends StatelessWidget {
                 width: 34,
                 height: 34,
                 decoration: BoxDecoration(
-                  color:
-                      selected ? AppColors.primary : AppColors.surfaceVariant,
+                  color: selected ? AppColors.primary : Colors.white,
                   borderRadius: BorderRadius.circular(10),
+                  border: selected ? null : Border.all(color: AppColors.border),
                 ),
-                child: Icon(icon, size: 19, color: Colors.white),
+                child: Icon(icon, size: 19, color: selected ? Colors.white : AppColors.textSecondary),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -482,7 +492,7 @@ class _RoleCard extends StatelessWidget {
                   children: [
                     Text(title,
                         style: AppTypography.bodySmall.copyWith(
-                            color: Colors.white, fontWeight: FontWeight.w700)),
+                            color: AppColors.textPrimary, fontWeight: FontWeight.w700)),
                     Text(subtitle,
                         style: AppTypography.caption
                             .copyWith(color: AppColors.textSecondary)),
@@ -491,7 +501,7 @@ class _RoleCard extends StatelessWidget {
               ),
               if (selected)
                 const Icon(Icons.check_circle_rounded,
-                    size: 18, color: AppColors.success),
+                    size: 18, color: AppColors.primary),
             ],
           ),
         ),
@@ -536,7 +546,7 @@ class _LoginField extends StatelessWidget {
         Text(
           label,
           style: AppTypography.bodySmall.copyWith(
-            color: const Color(0xFF94A3B8),
+            color: AppColors.textSecondary,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -545,34 +555,34 @@ class _LoginField extends StatelessWidget {
           controller: controller,
           focusNode: focusNode,
           autofocus: autofocus,
-          cursorColor: Colors.white,
+          cursorColor: AppColors.primary,
           obscureText: obscureText,
           textInputAction: textInputAction,
-          style: AppTypography.bodyMedium.copyWith(color: Colors.white),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
           onSubmitted: onSubmitted,
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: AppTypography.bodyMedium.copyWith(
-              color: const Color(0xFF475569),
+              color: AppColors.textDisabled,
             ),
-            prefixIcon: Icon(icon, color: const Color(0xFF64748B), size: 20),
+            prefixIcon: Icon(icon, color: AppColors.textSecondary, size: 20),
             suffixIcon: suffixIcon,
             filled: true,
-            fillColor: const Color(0xFF0F172A),
+            fillColor: AppColors.surfaceVariant,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 14,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFF334155)),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFF334155)),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(
                 color: AppColors.primary,
                 width: 1.5,

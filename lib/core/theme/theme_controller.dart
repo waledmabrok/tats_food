@@ -14,6 +14,7 @@ class ThemeController extends ChangeNotifier {
     _mode = value == 'light' ? ThemeMode.light : ThemeMode.dark;
   }
 
+
   Future<void> setMode(ThemeMode mode) async {
     if (_mode == mode) return;
     _mode = mode;

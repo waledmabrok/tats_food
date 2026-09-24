@@ -8,7 +8,6 @@ import '../constants/app_strings.dart';
 import '../../models/app_user.dart';
 
 /// الـ Sidebar الرئيسي للنظام — Dark Professional
-/// يعرض فقط العناصر المسموح بها بناءً على دور المستخدم (Owner فقط)
 class AppSidebar extends StatelessWidget {
   const AppSidebar({
     super.key,
@@ -51,7 +50,6 @@ class AppSidebar extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // القسم الرئيسي
                   _SidebarSection(label: AppStrings.sidebarMainMenu),
                   const SizedBox(height: AppDimensions.space6),
                   ...mainNavItems.map(
@@ -66,7 +64,6 @@ class AppSidebar extends StatelessWidget {
                   Container(height: 1, color: AppColors.sidebarDivider),
                   const SizedBox(height: AppDimensions.space16),
 
-                  // قسم الإدارة (للمالك فقط)
                   _SidebarSection(label: AppStrings.sidebarManagement),
                   const SizedBox(height: AppDimensions.space6),
                   ...managementNavItems.map(
@@ -119,7 +116,6 @@ class _SidebarHeaderState extends State<_SidebarHeader> {
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space16),
       child: Row(
         children: [
-          // أيقونة التطبيق
           Container(
             width: 40,
             height: 40,
@@ -150,7 +146,7 @@ class _SidebarHeaderState extends State<_SidebarHeader> {
                 Text(
                   _restaurantName,
                   style: AppTypography.titleMedium.copyWith(
-                    color: AppColors.sidebarTextActive,
+                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.w800,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -228,20 +224,19 @@ class _SidebarItemState extends State<_SidebarItem> {
             height: AppDimensions.sidebarItemHeight,
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.primary.withValues(alpha: 0.18)
+                  ? AppColors.primary.withValues(alpha: 0.15)
                   : _isHovered && !isDisabled
-                      ? AppColors.surfaceVariant.withValues(alpha: 0.5)
+                      ? AppColors.surfaceVariant
                       : Colors.transparent,
               borderRadius: BorderRadius.circular(AppDimensions.sidebarItemRadius),
               border: isSelected
-                  ? Border.all(color: AppColors.primary.withValues(alpha: 0.4), width: 1)
+                  ? Border.all(color: AppColors.primary.withValues(alpha: 0.35), width: 1)
                   : null,
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space12),
               child: Row(
                 children: [
-                  // الأيقونة
                   Icon(
                     isSelected ? widget.item.activeIcon : widget.item.icon,
                     size: AppDimensions.iconMd + 2,
@@ -250,29 +245,27 @@ class _SidebarItemState extends State<_SidebarItem> {
                         : isDisabled
                             ? AppColors.textDisabled
                             : _isHovered
-                                ? AppColors.textOnSurface
+                                ? AppColors.textPrimary
                                 : AppColors.sidebarText,
                   ),
                   const SizedBox(width: AppDimensions.space12),
 
-                  // التسمية
                   Expanded(
                     child: Text(
                       widget.item.label,
                       style: isSelected
-                          ? AppTypography.sidebarItemActive.copyWith(color: AppColors.primary)
+                          ? AppTypography.sidebarItemActive.copyWith(color: AppColors.sidebarTextActive)
                           : AppTypography.sidebarItem.copyWith(
                               color: isDisabled
                                   ? AppColors.textDisabled
                                   : _isHovered
-                                      ? AppColors.textOnSurface
+                                      ? AppColors.textPrimary
                                       : AppColors.sidebarText,
                             ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
 
-                  // مؤشر "قريباً"
                   if (isDisabled)
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -293,7 +286,6 @@ class _SidebarItemState extends State<_SidebarItem> {
                       ),
                     ),
 
-                  // مؤشر Active
                   if (isSelected)
                     Container(
                       width: 4,
@@ -335,7 +327,6 @@ class _SidebarFooterState extends State<_SidebarFooter> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // بيانات المستخدم
           Row(
             children: [
               Container(
@@ -360,7 +351,7 @@ class _SidebarFooterState extends State<_SidebarFooter> {
                     Text(
                       widget.user.name,
                       style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.textOnSurface,
+                        color: AppColors.textPrimary,
                         fontWeight: FontWeight.w700,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -380,7 +371,6 @@ class _SidebarFooterState extends State<_SidebarFooter> {
 
           const SizedBox(height: 8),
 
-          // زر تسجيل الخروج
           MouseRegion(
             onEnter: (_) => setState(() => _hovered = true),
             onExit: (_) => setState(() => _hovered = false),

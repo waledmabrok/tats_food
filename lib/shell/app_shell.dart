@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/routing/app_router.dart';
 import '../core/widgets/app_sidebar.dart';
+import '../core/constants/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_typography.dart';
 import '../core/services/session_service.dart';
@@ -27,14 +28,12 @@ class _AppShellState extends State<AppShell> {
   @override
   void initState() {
     super.initState();
-    // الكاشير يبدأ مباشرة على POS
     if (!widget.user.isManager) {
       _currentRoute = AppRoutes.cashier;
     }
   }
 
   void _onRouteSelected(String route) {
-    // حماية: الكاشير لا يستطيع التنقل خارج POS
     if (!widget.user.isManager) return;
     if (_currentRoute == route) return;
     setState(() => _currentRoute = route);
@@ -42,9 +41,9 @@ class _AppShellState extends State<AppShell> {
 
   void _logout() {
     SessionService.instance.logout();
-    Navigator.of(
-      context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => const LoginScreen()));
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
   }
 
   @override
@@ -70,17 +69,7 @@ class _AppShellState extends State<AppShell> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Container(
-        // ─── الخلفية الموحدة للنظام كله ──────────────────────────
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
-            colors: [
-              Color(0xFF0F172A), // Slate-900
-              Color(0xFF0A111E), // أغمق قليلاً
-            ],
-          ),
-        ),
+        color: AppColors.background,
         child: Row(
           children: [
             // ─── الـ Sidebar على اليمين (RTL) ───────────────────────
@@ -135,50 +124,56 @@ class _CashierTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 52,
+      height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       decoration: const BoxDecoration(
-        color: Color(0xFF1E293B),
-        border: Border(bottom: BorderSide(color: Color(0xFF334155))),
+        color: AppColors.topBarBg,
+        border: Border(bottom: BorderSide(color: AppColors.topBarBorder)),
       ),
       child: Row(
         children: [
-          // اسم النظام
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(6),
             child: Image.asset(
               'assets/images/logo.png',
-              width: 24,
-              height: 24,
+              width: 28,
+              height: 28,
               fit: BoxFit.cover,
             ),
           ),
           const SizedBox(width: 10),
           Text(
-            'طاطس — نقطة البيع',
+            '${AppStrings.appName} — ${AppStrings.navCashier}',
             style: AppTypography.titleSmall.copyWith(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontWeight: FontWeight.w700,
             ),
           ),
 
           const Spacer(),
 
-          // اسم الكاشير
-          const Icon(Icons.person_rounded, color: Color(0xFF94A3B8), size: 18),
+          const Icon(Icons.person_rounded, color: AppColors.textSecondary, size: 18),
           const SizedBox(width: 6),
           Text(
             userName,
             style: AppTypography.bodySmall.copyWith(
-              color: const Color(0xFF94A3B8),
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(width: 4),
-          Text(
-            '• كاشير',
-            style: AppTypography.bodySmall.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w600,
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              'كاشير',
+              style: AppTypography.caption.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
 
@@ -188,16 +183,15 @@ class _CashierTopBar extends StatelessWidget {
             tooltip: 'تغيير كلمة المرور',
             onPressed: onChangePassword,
             icon: const Icon(Icons.lock_reset_rounded),
-            color: const Color(0xFF94A3B8),
+            color: AppColors.textSecondary,
           ),
 
-          // زر الخروج
           TextButton.icon(
             onPressed: onLogout,
             icon: const Icon(Icons.logout_rounded, size: 16),
             label: const Text('خروج'),
             style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFF94A3B8),
+              foregroundColor: AppColors.error,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             ),
           ),

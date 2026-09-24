@@ -1,7 +1,9 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/database/database_helper.dart';
+import '../../../../core/services/data_export_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimensions.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -27,6 +29,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _isLoading = true;
   bool _isSaving = false;
   bool _isDeletingSales = false;
+  bool _isExporting = false;
+  bool _isExportingJson = false;
+  bool _isImportingJson = false;
+
 
   @override
   void initState() {
@@ -124,8 +130,143 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  // ─── تصدير البيانات إلى Excel ──────────────────────────────────────────
+  Future<void> _exportToExcel() async {
+    setState(() => _isExporting = true);
+    try {
+      final path = await DataExportService.instance.exportAllToExcel();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ تم التصدير بنجاح\n$path'),
+            backgroundColor: AppColors.success,
+            duration: const Duration(seconds: 6),
+            action: SnackBarAction(
+              label: 'موافق',
+              textColor: Colors.white,
+              onPressed: () {},
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('حدث خطأ أثناء التصدير: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isExporting = false);
+    }
+  }
+
+  // ─── تصدير نسخة احتياطية كاملة (JSON) ──────────────────────────────────
+  Future<void> _exportBackupJson() async {
+    setState(() => _isExportingJson = true);
+    try {
+      final path = await DataExportService.instance.exportAllDataToJson();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ تم تصدير النسخة الاحتياطية بنجاح:\n$path'),
+            backgroundColor: AppColors.success,
+            duration: const Duration(seconds: 6),
+            action: SnackBarAction(
+              label: 'موافق',
+              textColor: Colors.white,
+              onPressed: () {},
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('حدث خطأ أثناء التصدير: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isExportingJson = false);
+    }
+  }
+
+  // ─── استيراد نسخة احتياطية (JSON) ─────────────────────────────────────
+  Future<void> _importBackupJson() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+      dialogTitle: 'اختر ملف النسخة الاحتياطية (JSON)',
+    );
+
+    if (result == null || result.files.single.path == null) return;
+
+    final filePath = result.files.single.path!;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: const Icon(
+          Icons.upload_file_rounded,
+          color: AppColors.primary,
+          size: 40,
+        ),
+        title: const Text('تأكيد استيراد البيانات'),
+        content: const Text(
+          'سيتم استيراد كافة البيانات المسجلة في ملف النسخة الاحتياطية وتحديث السجلات في النظام.\n\n'
+          'هل تريد الاستمرار؟',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('إلغاء'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('استيراد الآن'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _isImportingJson = true);
+    try {
+      final count = await DataExportService.instance.importAllDataFromJson(filePath);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ تم استيراد البيانات بنجاح ($count سجل)'),
+            backgroundColor: AppColors.success,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+        _loadSettings();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('حدث خطأ أثناء استيراد البيانات: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isImportingJson = false);
+    }
+  }
+
   @override
   void dispose() {
+
+
     _nameCtrl.dispose();
     _phoneCtrl.dispose();
     _addressCtrl.dispose();
@@ -286,6 +427,191 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                           ),
                         ),
+
+                        const SizedBox(height: AppDimensions.space32),
+
+                        // ─── البيانات والنسخ الاحتياطي ──────────────────────
+                        Text(
+                          '📊 البيانات والنسخ الاحتياطي',
+                          style: AppTypography.titleLarge,
+                        ),
+                        const SizedBox(height: AppDimensions.space16),
+                        Container(
+                          padding: const EdgeInsets.all(AppDimensions.space24),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+                            border: Border.all(color: AppColors.border),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // ── 1) النسخ الاحتياطي والاستيراد (JSON) ──────────
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: const Icon(
+                                      Icons.cloud_sync_rounded,
+                                      color: AppColors.primary,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'نسخة احتياطية واستيراد كامل للنظام (JSON)',
+                                          style: AppTypography.titleMedium.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        Text(
+                                          'تصدير كل جداول وبيانات النظام في ملف نسخ احتياطي، أو استيراد ملف سابق لاسترجاع كل شيء.',
+                                          style: AppTypography.bodySmall.copyWith(
+                                            color: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Wrap(
+                                spacing: 12,
+                                runSpacing: 10,
+                                children: [
+                                  SizedBox(
+                                    height: AppDimensions.buttonHeightLg,
+                                    child: ElevatedButton.icon(
+                                      onPressed: _isExportingJson ? null : _exportBackupJson,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.primary,
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                                      ),
+                                      icon: _isExportingJson
+                                          ? const SizedBox(
+                                              width: 18,
+                                              height: 18,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: Colors.white,
+                                              ),
+                                            )
+                                          : const Icon(Icons.backup_rounded),
+                                      label: Text(
+                                        _isExportingJson ? 'جاري التصدير...' : 'تصدير كل الداتا (Backup)',
+                                        style: AppTypography.button,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: AppDimensions.buttonHeightLg,
+                                    child: OutlinedButton.icon(
+                                      onPressed: _isImportingJson ? null : _importBackupJson,
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: AppColors.primaryLight,
+                                        side: const BorderSide(color: AppColors.primary),
+                                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                                      ),
+                                      icon: _isImportingJson
+                                          ? const SizedBox(
+                                              width: 18,
+                                              height: 18,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: AppColors.primary,
+                                              ),
+                                            )
+                                          : const Icon(Icons.restore_page_rounded),
+                                      label: Text(
+                                        _isImportingJson ? 'جاري الاستيراد...' : 'استيراد كل الداتا (Restore)',
+                                        style: AppTypography.button,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 24),
+                              const Divider(color: AppColors.divider),
+                              const SizedBox(height: 20),
+
+                              // ── 2) تصدير Excel ──────────────────────────────
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.success.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: const Icon(
+                                      Icons.table_chart_rounded,
+                                      color: AppColors.success,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'تصدير كل البيانات كملف إكسيل (Excel)',
+                                          style: AppTypography.titleMedium.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        Text(
+                                          'يصدّر الطلبات، الأصناف، التصنيفات، المصروفات، الموردين، العملاء، حركات المخزون والشيفتات في أوراق عمل منفصلة.',
+                                          style: AppTypography.bodySmall.copyWith(
+                                            color: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              SizedBox(
+                                height: AppDimensions.buttonHeightLg,
+                                child: ElevatedButton.icon(
+                                  onPressed: _isExporting ? null : _exportToExcel,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.success,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                                  ),
+                                  icon: _isExporting
+                                      ? const SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : const Icon(Icons.download_rounded),
+                                  label: Text(
+                                    _isExporting ? 'جاري التصدير...' : 'تصدير إلى Excel (.xlsx)',
+                                    style: AppTypography.button,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
 
                         const SizedBox(height: AppDimensions.space32),
 

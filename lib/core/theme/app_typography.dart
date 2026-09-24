@@ -16,7 +16,7 @@ abstract final class AppTypography {
       fontSize: fontSize,
       fontWeight: fontWeight,
       color: color,
-      height: height ?? 1.4,
+      height: height ?? 1.32,
       letterSpacing: letterSpacing,
     );
   }
