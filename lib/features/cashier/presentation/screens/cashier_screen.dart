@@ -1627,286 +1627,264 @@ class _PaymentDialogState extends State<_PaymentDialog> {
               flex: 6,
               child: Container(
                 padding: const EdgeInsets.all(AppDimensions.space32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('إتمام الدفع', style: AppTypography.headlineMedium),
-                    const SizedBox(height: AppDimensions.space32),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('إتمام الدفع', style: AppTypography.headlineMedium),
+                      const SizedBox(height: AppDimensions.space32),
 
-                    Text(
-                      'نوع الطلب',
-                      style: AppTypography.titleMedium.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    SegmentedButton<OrderType>(
-                      segments: const [
-                        ButtonSegment(
-                          value: OrderType.takeaway,
-                          icon: Icon(Icons.shopping_bag_outlined),
-                          label: Text('تيك أواي'),
+                      Text(
+                        'نوع الطلب',
+                        style: AppTypography.titleMedium.copyWith(
+                          color: AppColors.textSecondary,
                         ),
-                        ButtonSegment(
-                          value: OrderType.delivery,
-                          icon: Icon(Icons.delivery_dining_outlined),
-                          label: Text('دليفري'),
+                      ),
+                      const SizedBox(height: 12),
+                      SegmentedButton<OrderType>(
+                        segments: const [
+                          ButtonSegment(
+                            value: OrderType.takeaway,
+                            icon: Icon(Icons.shopping_bag_outlined),
+                            label: Text('تيك أواي'),
+                          ),
+                          ButtonSegment(
+                            value: OrderType.delivery,
+                            icon: Icon(Icons.delivery_dining_outlined),
+                            label: Text('دليفري'),
+                          ),
+                        ],
+                        selected: {_orderType},
+                        onSelectionChanged: (selected) => setState(
+                          () => _orderType = selected.first,
+                        ),
+                      ),
+                      if (_orderType == OrderType.delivery) ...[
+                        const SizedBox(height: 16),
+                        DropdownButtonFormField<String>(
+                          initialValue: _selectedCustomerId,
+                          items: _customers
+                              .map(
+                                (customer) => DropdownMenuItem<String>(
+                                  value: customer['id'] as String,
+                                  child: Text(customer['name'] as String),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: _selectCustomer,
+                          decoration: InputDecoration(
+                            labelText: 'العميل المحفوظ',
+                            prefixIcon: const Icon(Icons.person_outline),
+                            filled: true,
+                            fillColor: AppColors.surface,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _customerNameCtrl,
+                          decoration: InputDecoration(
+                            labelText: 'اسم العميل',
+                            prefixIcon: const Icon(Icons.badge_outlined),
+                            filled: true,
+                            fillColor: AppColors.surface,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _phoneCtrl,
+                          keyboardType: TextInputType.phone,
+                          decoration: InputDecoration(
+                            labelText: 'رقم العميل',
+                            prefixIcon: const Icon(Icons.phone_outlined),
+                            filled: true,
+                            fillColor: AppColors.surface,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _addressCtrl,
+                          maxLines: 2,
+                          decoration: InputDecoration(
+                            labelText: 'عنوان التوصيل',
+                            prefixIcon: const Icon(Icons.location_on_outlined),
+                            filled: true,
+                            fillColor: AppColors.surface,
+                          ),
                         ),
                       ],
-                      selected: {_orderType},
-                      onSelectionChanged: (selected) => setState(
-                        () => _orderType = selected.first,
-                      ),
-                    ),
-                    if (_orderType == OrderType.delivery) ...[
-                      const SizedBox(height: 16),
-                      DropdownButtonFormField<String>(
-                        initialValue: _selectedCustomerId,
-                        items: _customers
-                            .map(
-                              (customer) => DropdownMenuItem<String>(
-                                value: customer['id'] as String,
-                                child: Text(customer['name'] as String),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: _selectCustomer,
-                        decoration: InputDecoration(
-                          labelText: 'العميل المحفوظ',
-                          prefixIcon: const Icon(Icons.person_outline),
-                          filled: true,
-                          fillColor: AppColors.surface,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _customerNameCtrl,
-                        decoration: InputDecoration(
-                          labelText: 'اسم العميل الجديد',
-                          prefixIcon: const Icon(Icons.badge_outlined),
-                          filled: true,
-                          fillColor: AppColors.surface,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _phoneCtrl,
-                        keyboardType: TextInputType.phone,
-                        decoration: InputDecoration(
-                          labelText: 'رقم العميل',
-                          prefixIcon: const Icon(Icons.phone_outlined),
-                          filled: true,
-                          fillColor: AppColors.surface,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _addressCtrl,
-                        maxLines: 2,
-                        decoration: InputDecoration(
-                          labelText: 'عنوان التوصيل',
-                          prefixIcon: const Icon(Icons.location_on_outlined),
-                          filled: true,
-                          fillColor: AppColors.surface,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: AppDimensions.space24),
+                      const SizedBox(height: AppDimensions.space24),
 
-                    // طريقة الدفع
-                    Text(
-                      AppStrings.paymentMethod,
-                      style: AppTypography.titleMedium.copyWith(
-                        color: AppColors.textSecondary,
+                      // طريقة الدفع
+                      Text(
+                        AppStrings.paymentMethod,
+                        style: AppTypography.titleMedium.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: PaymentMethod.values.map((m) {
-                        final isSelected = _method == m;
-                        IconData icon;
-                        switch (m) {
-                          case PaymentMethod.cash:
-                            icon = Icons.payments_rounded;
-                            break;
-                          case PaymentMethod.card:
-                            icon = Icons.credit_card_rounded;
-                            break;
-                          case PaymentMethod.vodafone:
-                            icon = Icons.phone_iphone_rounded;
-                            break;
-                          case PaymentMethod.other:
-                            icon = Icons.receipt_long_rounded;
-                            break;
-                        }
-                        return Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 6),
-                            child: InkWell(
-                              onTap: () => setState(() {
-                                _method = m;
-                                if (m != PaymentMethod.cash) _exactAmount();
-                              }),
-                              borderRadius: BorderRadius.circular(
-                                AppDimensions.radiusMd,
-                              ),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 20,
+                      const SizedBox(height: 12),
+                      Row(
+                        children: PaymentMethod.values.map((m) {
+                          final isSelected = _method == m;
+                          IconData icon;
+                          switch (m) {
+                            case PaymentMethod.cash:
+                              icon = Icons.payments_rounded;
+                              break;
+                            case PaymentMethod.card:
+                              icon = Icons.credit_card_rounded;
+                              break;
+                            case PaymentMethod.vodafone:
+                              icon = Icons.phone_iphone_rounded;
+                              break;
+                            case PaymentMethod.other:
+                              icon = Icons.receipt_long_rounded;
+                              break;
+                          }
+                          return Expanded(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 6),
+                              child: InkWell(
+                                onTap: () => setState(() {
+                                  _method = m;
+                                  if (m != PaymentMethod.cash) _exactAmount();
+                                }),
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusMd,
                                 ),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? AppColors.primary
-                                      : AppColors.surface,
-                                  border: Border.all(
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 20,
+                                  ),
+                                  decoration: BoxDecoration(
                                     color: isSelected
                                         ? AppColors.primary
-                                        : AppColors.border,
-                                    width: 2,
-                                  ),
-                                  borderRadius: BorderRadius.circular(
-                                    AppDimensions.radiusMd,
-                                  ),
-                                  boxShadow: isSelected
-                                      ? [
-                                          BoxShadow(
-                                            color: AppColors.primary.withValues(
-                                              alpha: 0.2,
-                                            ),
-                                            blurRadius: 10,
-                                            offset: const Offset(0, 4),
-                                          ),
-                                        ]
-                                      : [],
-                                ),
-                                child: Column(
-                                  children: [
-                                    Icon(
-                                      icon,
-                                      size: 32,
+                                        : AppColors.surface,
+                                    border: Border.all(
                                       color: isSelected
-                                          ? Colors.white
-                                          : AppColors.textSecondary,
+                                          ? AppColors.primary
+                                          : AppColors.border,
+                                      width: 2,
                                     ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      m.label,
-                                      style: AppTypography.titleSmall.copyWith(
+                                    borderRadius: BorderRadius.circular(
+                                      AppDimensions.radiusMd,
+                                    ),
+                                    boxShadow: isSelected
+                                        ? [
+                                            BoxShadow(
+                                              color:
+                                                  AppColors.primary.withValues(
+                                                alpha: 0.2,
+                                              ),
+                                              blurRadius: 10,
+                                              offset: const Offset(0, 4),
+                                            ),
+                                          ]
+                                        : [],
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        icon,
+                                        size: 32,
                                         color: isSelected
                                             ? Colors.white
-                                            : AppColors.textPrimary,
+                                            : AppColors.textSecondary,
                                       ),
-                                    ),
-                                  ],
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        m.label,
+                                        style:
+                                            AppTypography.titleSmall.copyWith(
+                                          color: isSelected
+                                              ? Colors.white
+                                              : AppColors.textPrimary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: AppDimensions.space32),
-
-                    // إدخال المبالغ
-                    if (_method == PaymentMethod.cash) ...[
-                      Text(
-                        'المبلغ المستلم',
-                        style: AppTypography.titleMedium.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                          );
+                        }).toList(),
                       ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _paidCtrl,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                            RegExp(r'^\d*\.?\d*'),
-                          ),
-                        ],
-                        style: AppTypography.statNumberMedium.copyWith(
-                          color: AppColors.primary,
-                        ),
-                        textAlign: TextAlign.center,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: AppColors.surface,
-                          suffixText: AppStrings.currency,
-                          suffixStyle: AppTypography.titleLarge.copyWith(
+                      const SizedBox(height: AppDimensions.space32),
+
+                      // إدخال المبالغ
+                      if (_method == PaymentMethod.cash) ...[
+                        Text(
+                          'المبلغ المستلم',
+                          style: AppTypography.titleMedium.copyWith(
                             color: AppColors.textSecondary,
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppDimensions.radiusMd,
-                            ),
-                            borderSide: BorderSide(
-                              color: AppColors.primary,
-                              width: 2,
-                            ),
-                          ),
                         ),
-                        onChanged: (_) => setState(() {}),
-                      ),
-                      const SizedBox(height: 16),
-                      // Quick Cash Buttons
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        alignment: WrapAlignment.center,
-                        children: [
-                          _QuickBtn('50', () => _addQuickCash(50)),
-                          _QuickBtn('100', () => _addQuickCash(100)),
-                          _QuickBtn('200', () => _addQuickCash(200)),
-                          _QuickBtn(
-                            'الضبط',
-                            _exactAmount,
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _paidCtrl,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d*\.?\d*'),
+                            ),
+                          ],
+                          style: AppTypography.statNumberMedium.copyWith(
                             color: AppColors.primary,
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'رقم الموبايل (اختياري)',
-                        style: AppTypography.titleMedium.copyWith(
-                          color: AppColors.textSecondary,
+                          textAlign: TextAlign.center,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: AppColors.surface,
+                            suffixText: AppStrings.currency,
+                            suffixStyle: AppTypography.titleLarge.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          onChanged: (_) => setState(() {}),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _refCtrl,
-                        style: AppTypography.headlineSmall,
-                        decoration: InputDecoration(
-                          hintText: '01xxxxxxxxx',
-                          filled: true,
-                          fillColor: AppColors.surface,
+                        const SizedBox(height: 16),
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          alignment: WrapAlignment.center,
+                          children: [
+                            _QuickBtn('50', () => _addQuickCash(50)),
+                            _QuickBtn('100', () => _addQuickCash(100)),
+                            _QuickBtn('200', () => _addQuickCash(200)),
+                            _QuickBtn(
+                              'الضبط',
+                              _exactAmount,
+                              color: AppColors.primary,
+                            ),
+                          ],
                         ),
-                      ),
-                    ] else ...[
-                      Text(
-                        _method == PaymentMethod.vodafone
-                            ? AppStrings.paymentPhoneNumber
-                            : AppStrings.paymentRef,
-                        style: AppTypography.titleMedium.copyWith(
-                          color: AppColors.textSecondary,
+                      ] else ...[
+                        Text(
+                          _method == PaymentMethod.vodafone
+                              ? AppStrings.paymentPhoneNumber
+                              : AppStrings.paymentRef,
+                          style: AppTypography.titleMedium.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _refCtrl,
-                        style: AppTypography.headlineSmall,
-                        decoration: InputDecoration(
-                          hintText: _method == PaymentMethod.vodafone
-                              ? '01xxxxxxxxx'
-                              : 'رقم العملية (اختياري)',
-                          filled: true,
-                          fillColor: AppColors.surface,
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _refCtrl,
+                          style: AppTypography.headlineSmall,
+                          decoration: InputDecoration(
+                            hintText: _method == PaymentMethod.vodafone
+                                ? '01xxxxxxxxx'
+                                : 'رقم العملية (اختياري)',
+                            filled: true,
+                            fillColor: AppColors.surface,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -1950,7 +1928,7 @@ class _PaymentDialogState extends State<_PaymentDialog> {
                       ),
                     ),
                     _DarkSummaryRow(
-                      'الإجمالي المطلوب',
+                      'الإجمالي',
                       widget.total,
                       isTotal: true,
                       color: AppColors.accent,
@@ -2124,7 +2102,7 @@ class _DarkSummaryRow extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 4),
         Text(
           '${value.toStringAsFixed(2)} ${AppStrings.currency}',
           style: style,

@@ -4,10 +4,11 @@ import '../../../../core/theme/app_dimensions.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_top_bar.dart';
 import '../../../../core/database/database_helper.dart';
-import '../../../../core/services/session_service.dart';
 import '../../../Shift/screens/PurchaseReceiveScreen.dart';
 import '../../../../models/product.dart';
 import '../../../../repositories/product_repository.dart';
+import 'employee_statement.dart';
+import 'supplier_detail_screen.dart';
 
 enum ManagementSection {
   suppliers,
@@ -16,6 +17,38 @@ enum ManagementSection {
   rawMaterials,
   accounting,
   employees,
+}
+
+/// قائمة الوحدات الجاهزة للخامات — لو مش موجودة هنا يختار "أخرى" ويكتبها بنفسه
+const rawMaterialUnits = [
+  'كجم',
+  'جم',
+  'لتر',
+  'مل',
+  'قطعة',
+  'علبة',
+  'كيس',
+  'دستة'
+];
+
+/// مجموعات الوحدات المتوافقة لكل وحدة أساسية، مع معامل التحويل من الوحدة
+/// المختارة إلى الوحدة الأساسية المخزنة بها الخامة (مثال: الخامة أساسها كجم،
+/// فلو اخترت "جم" هيتحول كل جرام تكتبه إلى 0.001 كجم قبل الحفظ وحساب التكلفة).
+const Map<String, Map<String, double>> compatibleUnitFactors = {
+  'كجم': {'كجم': 1, 'جم': 0.001},
+  'جم': {'جم': 1, 'كجم': 1000},
+  'لتر': {'لتر': 1, 'مل': 0.001},
+  'مل': {'مل': 1, 'لتر': 1000},
+  'دستة': {'دستة': 1, 'قطعة': 1 / 12},
+  'قطعة': {'قطعة': 1, 'دستة': 12},
+};
+
+/// يرجع الوحدات المتاحة للاختيار عند إضافة الخامة للوصفة، بناءً على وحدة
+/// تخزين الخامة الأساسية. لو مفيش وحدات متوافقة (مثل علبة/كيس) بترجع هي نفسها فقط.
+List<String> compatibleUnitsFor(String baseUnit) {
+  final map = compatibleUnitFactors[baseUnit];
+  if (map == null) return [baseUnit];
+  return map.keys.toList();
 }
 
 class ManagementSectionScreen extends StatelessWidget {
@@ -419,6 +452,23 @@ class _ManagementRecordsScreenState extends State<_ManagementRecordsScreen> {
     }
   }
 
+  Future<void> _openEmployeeStatement(Map<String, dynamic> record) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (_) => EmployeeStatementScreen(employee: record)),
+    );
+    _load();
+  }
+
+  Future<void> _openSupplierDetail(Map<String, dynamic> record) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => SupplierDetailScreen(supplier: record)),
+    );
+    _load();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -519,10 +569,12 @@ class _ManagementRecordsScreenState extends State<_ManagementRecordsScreen> {
           Expanded(
             child: InkWell(
               onTap: widget.type == _RecordType.employees
-                  ? () => _showEmployeeStatement(record)
+                  ? () => _openEmployeeStatement(record)
                   : widget.type == _RecordType.customers
                       ? () => _showCustomerHistory(record)
-                      : null,
+                      : widget.type == _RecordType.suppliers
+                          ? () => _openSupplierDetail(record)
+                          : null,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -535,11 +587,16 @@ class _ManagementRecordsScreenState extends State<_ManagementRecordsScreen> {
           ),
           if (widget.type == _RecordType.employees)
             IconButton(
-              tooltip: 'تسجيل حركة مالية',
-              onPressed: () => _showEmployeeTransaction(record),
+              tooltip: 'كشف الحساب / تسجيل حركة مالية',
+              onPressed: () => _openEmployeeStatement(record),
               icon: const Icon(Icons.payments_outlined),
             ),
-          if (widget.type == _RecordType.suppliers)
+          if (widget.type == _RecordType.suppliers) ...[
+            IconButton(
+              tooltip: 'كشف الحساب / سداد',
+              onPressed: () => _openSupplierDetail(record),
+              icon: const Icon(Icons.account_balance_wallet_outlined),
+            ),
             IconButton(
               tooltip: 'استلام بضاعة',
               onPressed: () => Navigator.push(
@@ -550,6 +607,7 @@ class _ManagementRecordsScreenState extends State<_ManagementRecordsScreen> {
               ),
               icon: const Icon(Icons.move_to_inbox_outlined),
             ),
+          ],
           if (widget.type == _RecordType.rawMaterials) ...[
             IconButton(
               tooltip: 'تعديل الخامة',
@@ -562,51 +620,6 @@ class _ManagementRecordsScreenState extends State<_ManagementRecordsScreen> {
               icon: Icon(Icons.delete_outline, color: AppColors.error),
             ),
           ],
-        ],
-      ),
-    );
-  }
-
-  Future<void> _showEmployeeTransaction(Map<String, dynamic> employee) async {
-    final saved = await showDialog<bool>(
-      context: context,
-      builder: (_) => _EmployeeTransactionDialog(employee: employee),
-    );
-    if (saved == true) _load();
-  }
-
-  Future<void> _showEmployeeStatement(Map<String, dynamic> employee) async {
-    final statement = await DatabaseHelper.instance.getEmployeeMonthlyStatement(
-      employee['id'] as String,
-    );
-    if (!mounted) return;
-    final remaining = (statement['remaining'] as num).toDouble();
-    await showDialog<void>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text('كشف حساب ${employee['name']}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('الراتب: ${statement['monthly_salary']} ج.م'),
-            Text('السلف: ${statement['advances']} ج.م'),
-            Text('المدفوع: ${statement['payments']} ج.م'),
-            Text('الخصومات: ${statement['deductions']} ج.م'),
-            const Divider(),
-            Text(
-              'المتبقي: ${remaining.toStringAsFixed(2)} ج.م',
-              style: AppTypography.titleMedium.copyWith(
-                color: remaining < 0 ? AppColors.error : AppColors.success,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('إغلاق'),
-          ),
         ],
       ),
     );
@@ -680,11 +693,14 @@ class _RecordFormDialogState extends State<_RecordFormDialog> {
   final _formKey = GlobalKey<FormState>();
   final _name = TextEditingController();
   final _phone = TextEditingController();
-  final _detail = TextEditingController();
+  final _detail = TextEditingController(); // العنوان/الوظيفة، أو الوحدة "أخرى"
   final _amount = TextEditingController(text: '0');
   final _minimum = TextEditingController(text: '0');
   final _initialStock = TextEditingController(text: '0');
   bool _saving = false;
+
+  // ─── وحدة القياس للخامات ─────────────────────────
+  String _unitChoice = rawMaterialUnits.first;
 
   @override
   void initState() {
@@ -692,10 +708,21 @@ class _RecordFormDialogState extends State<_RecordFormDialog> {
     final record = widget.record;
     if (record != null) {
       _name.text = record['name'] as String? ?? '';
-      _detail.text = record['unit'] as String? ?? '';
       _amount.text = '${record['cost_per_unit'] ?? 0}';
       _minimum.text = '${record['min_stock'] ?? 0}';
       _initialStock.text = '${record['stock'] ?? 0}';
+
+      if (widget.type == _RecordType.rawMaterials) {
+        final unit = record['unit'] as String? ?? '';
+        if (rawMaterialUnits.contains(unit)) {
+          _unitChoice = unit;
+        } else if (unit.isNotEmpty) {
+          _unitChoice = 'أخرى';
+          _detail.text = unit;
+        }
+      } else {
+        _detail.text = record['unit'] as String? ?? '';
+      }
     }
   }
 
@@ -717,8 +744,17 @@ class _RecordFormDialogState extends State<_RecordFormDialog> {
     super.dispose();
   }
 
+  String get _finalUnit =>
+      _unitChoice == 'أخرى' ? _detail.text.trim() : _unitChoice;
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    if (widget.type == _RecordType.rawMaterials && _finalUnit.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('اكتب وحدة القياس')),
+      );
+      return;
+    }
     setState(() => _saving = true);
     final db = DatabaseHelper.instance;
     final amount = double.tryParse(_amount.text) ?? 0;
@@ -739,7 +775,7 @@ class _RecordFormDialogState extends State<_RecordFormDialog> {
         if (widget.record == null) {
           await db.addRawMaterial(
               name: _name.text.trim(),
-              unit: _detail.text.trim().isEmpty ? 'كجم' : _detail.text.trim(),
+              unit: _finalUnit,
               costPerUnit: amount,
               minStock: minimum,
               initialStock: initialStock);
@@ -747,7 +783,7 @@ class _RecordFormDialogState extends State<_RecordFormDialog> {
           await db.updateRawMaterial(
             id: widget.record!['id'] as String,
             name: _name.text.trim(),
-            unit: _detail.text.trim().isEmpty ? 'كجم' : _detail.text.trim(),
+            unit: _finalUnit,
             costPerUnit: amount,
             minStock: minimum,
             stock: initialStock,
@@ -801,13 +837,34 @@ class _RecordFormDialogState extends State<_RecordFormDialog> {
                           : null),
                 if (widget.type != _RecordType.rawMaterials)
                   const SizedBox(height: AppDimensions.space16),
-                TextFormField(
-                    controller: _detail,
-                    decoration: InputDecoration(labelText: detailLabel),
-                    validator: widget.type == _RecordType.rawMaterials
-                        ? (v) => v!.trim().isEmpty ? 'الوحدة مطلوبة' : null
-                        : null),
-                const SizedBox(height: AppDimensions.space16),
+
+                // ─── وحدة القياس (Dropdown) للخامات فقط ──────────
+                if (widget.type == _RecordType.rawMaterials) ...[
+                  DropdownButtonFormField<String>(
+                    initialValue: _unitChoice,
+                    items: [...rawMaterialUnits, 'أخرى']
+                        .map((u) => DropdownMenuItem(value: u, child: Text(u)))
+                        .toList(),
+                    onChanged: (v) => setState(() => _unitChoice = v!),
+                    decoration: const InputDecoration(labelText: 'وحدة القياس'),
+                  ),
+                  if (_unitChoice == 'أخرى') ...[
+                    const SizedBox(height: AppDimensions.space16),
+                    TextFormField(
+                      controller: _detail,
+                      decoration:
+                          const InputDecoration(labelText: 'اكتب الوحدة'),
+                    ),
+                  ],
+                  const SizedBox(height: AppDimensions.space16),
+                ] else ...[
+                  // ─── حقل العنوان/الوظيفة لباقي الأنواع ──────────
+                  TextFormField(
+                      controller: _detail,
+                      decoration: InputDecoration(labelText: detailLabel)),
+                  const SizedBox(height: AppDimensions.space16),
+                ],
+
                 if (amountLabel != null)
                   TextFormField(
                       controller: _amount,
@@ -844,80 +901,6 @@ class _RecordFormDialogState extends State<_RecordFormDialog> {
         FilledButton(
             onPressed: _saving ? null : _save,
             child: Text(_saving ? 'جاري الحفظ...' : 'حفظ')),
-      ],
-    );
-  }
-}
-
-class _EmployeeTransactionDialog extends StatefulWidget {
-  const _EmployeeTransactionDialog({required this.employee});
-
-  final Map<String, dynamic> employee;
-
-  @override
-  State<_EmployeeTransactionDialog> createState() =>
-      _EmployeeTransactionDialogState();
-}
-
-class _EmployeeTransactionDialogState
-    extends State<_EmployeeTransactionDialog> {
-  String _type = 'advance';
-  final _amount = TextEditingController();
-  final _notes = TextEditingController();
-
-  @override
-  void dispose() {
-    _amount.dispose();
-    _notes.dispose();
-    super.dispose();
-  }
-
-  Future<void> _save() async {
-    final amount = double.tryParse(_amount.text.trim());
-    if (amount == null || amount <= 0) return;
-    await DatabaseHelper.instance.addEmployeeTransaction(
-      employeeId: widget.employee['id'] as String,
-      type: _type,
-      amount: amount,
-      notes: _notes.text.trim(),
-      userId: SessionService.instance.currentUser?.id,
-    );
-    if (mounted) Navigator.pop(context, true);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('حركة مالية - ${widget.employee['name']}'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          DropdownButtonFormField<String>(
-            initialValue: _type,
-            items: const [
-              DropdownMenuItem(value: 'advance', child: Text('سلفة')),
-              DropdownMenuItem(
-                  value: 'salary_payment', child: Text('صرف راتب')),
-              DropdownMenuItem(value: 'bonus', child: Text('مكافأة')),
-              DropdownMenuItem(value: 'deduction', child: Text('خصم')),
-            ],
-            onChanged: (value) => setState(() => _type = value!),
-            decoration: const InputDecoration(labelText: 'نوع الحركة'),
-          ),
-          TextField(
-              controller: _amount,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'المبلغ')),
-          TextField(
-              controller: _notes,
-              decoration: const InputDecoration(labelText: 'ملاحظات')),
-        ],
-      ),
-      actions: [
-        TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('إلغاء')),
-        FilledButton(onPressed: _save, child: const Text('تسجيل')),
       ],
     );
   }
@@ -1277,6 +1260,7 @@ class _RecipeDialog extends StatefulWidget {
 class _RecipeDialogState extends State<_RecipeDialog> {
   List<Map<String, dynamic>> _materials = [];
   final Map<String, TextEditingController> _quantities = {};
+  final Map<String, String> _selectedUnits = {};
   bool _loading = true;
 
   @override
@@ -1293,11 +1277,15 @@ class _RecipeDialogState extends State<_RecipeDialog> {
     );
     for (final material in materials) {
       final id = material['id'] as String;
+      final baseUnit = material['unit'] as String? ?? '';
       final match =
           existing.where((row) => row['raw_material_id'] == id).firstOrNull;
+      // الكمية المحفوظة دايمًا بوحدة تخزين الخامة الأساسية، فبنعرضها بنفس
+      // الوحدة الأساسية، وبعدين المستخدم يقدر يغيّر وحدة الإدخال لو حابب.
       _quantities[id] = TextEditingController(
         text: match == null ? '' : '${match['quantity_used']}',
       );
+      _selectedUnits[id] = baseUnit;
     }
     if (mounted) {
       setState(() {
@@ -1315,19 +1303,35 @@ class _RecipeDialogState extends State<_RecipeDialog> {
     super.dispose();
   }
 
+  /// معامل تحويل الكمية المكتوبة بالوحدة المختارة إلى وحدة تخزين الخامة
+  /// الأساسية (اللي بيتحسب بيها المخزون والتكلفة).
+  double _factorFor(String materialId, String baseUnit) {
+    final selected = _selectedUnits[materialId] ?? baseUnit;
+    if (selected == baseUnit) return 1;
+    return compatibleUnitFactors[baseUnit]?[selected] ?? 1;
+  }
+
+  /// الكمية بوحدة تخزين الخامة الأساسية، بعد تحويلها من الوحدة اللي
+  /// المستخدم كاتب بيها في الحقل.
+  double _baseQuantityFor(Map<String, dynamic> material) {
+    final id = material['id'] as String;
+    final baseUnit = material['unit'] as String? ?? '';
+    final entered = double.tryParse(_quantities[id]?.text ?? '') ?? 0;
+    return entered * _factorFor(id, baseUnit);
+  }
+
   double get _recipeCost {
     return _materials.fold(0, (total, material) {
-      final quantity =
-          double.tryParse(_quantities[material['id']]?.text ?? '') ?? 0;
+      final baseQuantity = _baseQuantityFor(material);
       final unitCost = (material['cost_per_unit'] as num?)?.toDouble() ?? 0;
-      return total + quantity * unitCost;
+      return total + baseQuantity * unitCost;
     });
   }
 
   Future<void> _save() async {
     final ingredients = <Map<String, dynamic>>[];
     for (final material in _materials) {
-      final quantity = double.tryParse(_quantities[material['id']]!.text) ?? 0;
+      final quantity = _baseQuantityFor(material);
       if (quantity > 0) {
         ingredients.add({
           'raw_material_id': material['id'],
@@ -1356,7 +1360,7 @@ class _RecipeDialogState extends State<_RecipeDialog> {
                       Align(
                         alignment: Alignment.centerRight,
                         child: Text(
-                          'اكتب الكمية المستخدمة في وحدة بيع واحدة للصنف',
+                          'اكتب الكمية واختر الوحدة اللي بتستخدمها في وصفة الصنف، هتتحول تلقائيًا لوحدة تخزين الخامة',
                           style: AppTypography.bodySmall,
                         ),
                       ),
@@ -1367,39 +1371,70 @@ class _RecipeDialogState extends State<_RecipeDialog> {
                           separatorBuilder: (_, __) => const Divider(height: 1),
                           itemBuilder: (_, index) {
                             final material = _materials[index];
+                            final id = material['id'] as String;
+                            final baseUnit = material['unit'] as String? ?? '';
                             final cost = (material['cost_per_unit'] as num?)
                                     ?.toDouble() ??
                                 0;
+                            final options = compatibleUnitsFor(baseUnit);
+                            final hasValue =
+                                _quantities[id]?.text.isNotEmpty ?? false;
                             return ListTile(
                               contentPadding: EdgeInsets.zero,
                               leading: Icon(
                                 Icons.inventory_2_outlined,
-                                color: (_quantities[material['id']]
-                                            ?.text
-                                            .isNotEmpty ??
-                                        false)
+                                color: hasValue
                                     ? AppColors.primary
                                     : AppColors.textDisabled,
                               ),
                               title: Text(material['name'] as String),
                               subtitle: Text(
-                                '${material['unit']} • تكلفة الوحدة: ${cost.toStringAsFixed(2)} ج.م • المتاح: ${material['stock']}',
+                                'تخزين: $baseUnit • تكلفة الوحدة: ${cost.toStringAsFixed(2)} ج.م • المتاح: ${material['stock']}'
+                                '${hasValue && _selectedUnits[id] != baseUnit ? ' • = ${_baseQuantityFor(material).toStringAsFixed(3)} $baseUnit' : ''}',
                                 style: AppTypography.caption,
                               ),
                               trailing: SizedBox(
-                                width: 105,
-                                child: TextField(
-                                  controller: _quantities[material['id']],
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                          decimal: true),
-                                  onChanged: (_) => setState(() {}),
-                                  decoration: InputDecoration(
-                                    labelText: material['unit'] as String?,
-                                    isDense: true,
-                                    filled: true,
-                                    fillColor: AppColors.surfaceVariant,
-                                  ),
+                                width: options.length > 1 ? 235 : 105,
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 3,
+                                      child: TextField(
+                                        controller: _quantities[id],
+                                        keyboardType: const TextInputType
+                                            .numberWithOptions(decimal: true),
+                                        onChanged: (_) => setState(() {}),
+                                        decoration: InputDecoration(
+                                          labelText: 'الكمية',
+                                          isDense: true,
+                                          filled: true,
+                                          fillColor: AppColors.surfaceVariant,
+                                        ),
+                                      ),
+                                    ),
+                                    if (options.length > 1) ...[
+                                      const SizedBox(
+                                          width: AppDimensions.space8),
+                                      Expanded(
+                                        flex: 4,
+                                        child: DropdownButtonFormField<String>(
+                                          initialValue:
+                                              _selectedUnits[id] ?? baseUnit,
+                                          isDense: true,
+                                          decoration: const InputDecoration(
+                                            isDense: true,
+                                            filled: true,
+                                          ),
+                                          items: options
+                                              .map((u) => DropdownMenuItem(
+                                                  value: u, child: Text(u)))
+                                              .toList(),
+                                          onChanged: (v) => setState(
+                                              () => _selectedUnits[id] = v!),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
                                 ),
                               ),
                             );
