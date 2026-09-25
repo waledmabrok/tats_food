@@ -9,6 +9,7 @@ import '../../../../core/theme/app_dimensions.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/theme_controller.dart';
 import '../../../../core/widgets/app_top_bar.dart';
+import '../../../../core/widgets/restart_app.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -32,7 +33,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _isExporting = false;
   bool _isExportingJson = false;
   bool _isImportingJson = false;
-
 
   @override
   void initState() {
@@ -65,7 +65,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) {
       setState(() => _isSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(AppStrings.settingsSaved),
           backgroundColor: AppColors.success,
         ),
@@ -78,7 +78,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        icon: const Icon(
+        icon: Icon(
           Icons.warning_amber_rounded,
           color: AppColors.error,
           size: 40,
@@ -110,7 +110,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await _db.deleteAllSales();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('تم حذف كل المبيعات بنجاح'),
             backgroundColor: AppColors.success,
           ),
@@ -211,7 +211,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        icon: const Icon(
+        icon: Icon(
           Icons.upload_file_rounded,
           color: AppColors.primary,
           size: 40,
@@ -238,7 +238,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     setState(() => _isImportingJson = true);
     try {
-      final count = await DataExportService.instance.importAllDataFromJson(filePath);
+      final count =
+          await DataExportService.instance.importAllDataFromJson(filePath);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -265,8 +266,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   void dispose() {
-
-
     _nameCtrl.dispose();
     _phoneCtrl.dispose();
     _addressCtrl.dispose();
@@ -287,7 +286,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Align(
                   alignment: Alignment.topRight,
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 600),
+                    constraints: BoxConstraints(maxWidth: 600),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -309,53 +308,89 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                          AnimatedBuilder(
-  animation: ThemeController.instance,
-  builder: (context, _) {
-    final mode = ThemeController.instance.mode;
+                              AnimatedBuilder(
+                                animation: ThemeController.instance,
+                                builder: (context, _) {
+                                  final mode = ThemeController.instance.mode;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'مظهر النظام',
-          style: AppTypography.bodySmall.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.space8),
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'مظهر النظام',
+                                        style: AppTypography.bodySmall.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      SizedBox(height: AppDimensions.space8),
+                                      SegmentedButton<ThemeMode>(
+                                        segments: const [
+                                          ButtonSegment<ThemeMode>(
+                                            value: ThemeMode.light,
+                                            icon:
+                                                Icon(Icons.light_mode_outlined),
+                                            label: Text('فاتح'),
+                                          ),
+                                          ButtonSegment<ThemeMode>(
+                                            value: ThemeMode.dark,
+                                            icon:
+                                                Icon(Icons.dark_mode_outlined),
+                                            label: Text('داكن'),
+                                          ),
+                                        ],
+                                        selected: {mode},
+                                        onSelectionChanged: (selection) async {
+                                          final newMode = selection.first;
+                                          if (newMode == mode) return;
 
-        SegmentedButton<ThemeMode>(
-          segments: const [
-            ButtonSegment<ThemeMode>(
-              value: ThemeMode.light,
-              icon: Icon(Icons.light_mode_outlined),
-              label: Text('فاتح'),
-            ),
-            ButtonSegment<ThemeMode>(
-              value: ThemeMode.dark,
-              icon: Icon(Icons.dark_mode_outlined),
-              label: Text('داكن'),
-            ),
-          ],
-          selected: {mode},
-          onSelectionChanged: (selection) {
-            ThemeController.instance.setMode(selection.first);
-          },
-        ),
+                                          final confirmed =
+                                              await showDialog<bool>(
+                                            context: context,
+                                            builder: (ctx) => AlertDialog(
+                                              title: const Text('تغيير المظهر'),
+                                              content: Text(
+                                                'هيتم تطبيق الوضع ${newMode == ThemeMode.dark ? "الداكن" : "الفاتح"} '
+                                                'وإعادة تحميل الشاشات. تكمل؟',
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(ctx, false),
+                                                  child: const Text('إلغاء'),
+                                                ),
+                                                ElevatedButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(ctx, true),
+                                                  child: const Text('تأكيد'),
+                                                ),
+                                              ],
+                                            ),
+                                          );
 
-        const SizedBox(height: AppDimensions.space20),
-      ],
-    );
-  },
-),
+                                          if (confirmed != true) return;
+
+                                          ThemeController.instance
+                                              .setMode(newMode);
+                                          if (context.mounted) {
+                                            await AppRestartService
+                                                .restartCompletely();
+                                          }
+                                        },
+                                      ),
+                                      const SizedBox(
+                                          height: AppDimensions.space20),
+                                    ],
+                                  );
+                                },
+                              ),
                               _buildField(
                                 AppStrings.settingsRestaurantName,
                                 _nameCtrl,
                                 validator: (v) =>
                                     (v == null || v.trim().isEmpty)
-                                    ? 'اسم المطعم مطلوب'
-                                    : null,
+                                        ? 'اسم المطعم مطلوب'
+                                        : null,
                               ),
                               const SizedBox(height: 16),
                               _buildPhoneField(),
@@ -440,7 +475,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           padding: const EdgeInsets.all(AppDimensions.space24),
                           decoration: BoxDecoration(
                             color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+                            borderRadius:
+                                BorderRadius.circular(AppDimensions.radiusMd),
                             border: Border.all(color: AppColors.border),
                           ),
                           child: Column(
@@ -452,10 +488,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   Container(
                                     padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                      color: AppColors.primary.withValues(alpha: 0.15),
+                                      color: AppColors.primary
+                                          .withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
-                                    child: const Icon(
+                                    child: Icon(
                                       Icons.cloud_sync_rounded,
                                       color: AppColors.primary,
                                       size: 24,
@@ -464,17 +501,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   const SizedBox(width: 14),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           'نسخة احتياطية واستيراد كامل للنظام (JSON)',
-                                          style: AppTypography.titleMedium.copyWith(
+                                          style: AppTypography.titleMedium
+                                              .copyWith(
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
                                         Text(
                                           'تصدير كل جداول وبيانات النظام في ملف نسخ احتياطي، أو استيراد ملف سابق لاسترجاع كل شيء.',
-                                          style: AppTypography.bodySmall.copyWith(
+                                          style:
+                                              AppTypography.bodySmall.copyWith(
                                             color: AppColors.textSecondary,
                                           ),
                                         ),
@@ -491,11 +531,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   SizedBox(
                                     height: AppDimensions.buttonHeightLg,
                                     child: ElevatedButton.icon(
-                                      onPressed: _isExportingJson ? null : _exportBackupJson,
+                                      onPressed: _isExportingJson
+                                          ? null
+                                          : _exportBackupJson,
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: AppColors.primary,
                                         foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 18),
                                       ),
                                       icon: _isExportingJson
                                           ? const SizedBox(
@@ -508,7 +551,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                             )
                                           : const Icon(Icons.backup_rounded),
                                       label: Text(
-                                        _isExportingJson ? 'جاري التصدير...' : 'تصدير كل الداتا (Backup)',
+                                        _isExportingJson
+                                            ? 'جاري التصدير...'
+                                            : 'تصدير كل الداتا (Backup)',
                                         style: AppTypography.button,
                                       ),
                                     ),
@@ -516,14 +561,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   SizedBox(
                                     height: AppDimensions.buttonHeightLg,
                                     child: OutlinedButton.icon(
-                                      onPressed: _isImportingJson ? null : _importBackupJson,
+                                      onPressed: _isImportingJson
+                                          ? null
+                                          : _importBackupJson,
                                       style: OutlinedButton.styleFrom(
                                         foregroundColor: AppColors.primaryLight,
-                                        side: const BorderSide(color: AppColors.primary),
-                                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                                        side: BorderSide(
+                                            color: AppColors.primary),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 18),
                                       ),
                                       icon: _isImportingJson
-                                          ? const SizedBox(
+                                          ? SizedBox(
                                               width: 18,
                                               height: 18,
                                               child: CircularProgressIndicator(
@@ -531,9 +580,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                                 color: AppColors.primary,
                                               ),
                                             )
-                                          : const Icon(Icons.restore_page_rounded),
+                                          : const Icon(
+                                              Icons.restore_page_rounded),
                                       label: Text(
-                                        _isImportingJson ? 'جاري الاستيراد...' : 'استيراد كل الداتا (Restore)',
+                                        _isImportingJson
+                                            ? 'جاري الاستيراد...'
+                                            : 'استيراد كل الداتا (Restore)',
                                         style: AppTypography.button,
                                       ),
                                     ),
@@ -542,7 +594,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
 
                               const SizedBox(height: 24),
-                              const Divider(color: AppColors.divider),
+                              Divider(color: AppColors.divider),
                               const SizedBox(height: 20),
 
                               // ── 2) تصدير Excel ──────────────────────────────
@@ -551,10 +603,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   Container(
                                     padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                      color: AppColors.success.withValues(alpha: 0.15),
+                                      color: AppColors.success
+                                          .withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
-                                    child: const Icon(
+                                    child: Icon(
                                       Icons.table_chart_rounded,
                                       color: AppColors.success,
                                       size: 24,
@@ -563,17 +616,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   const SizedBox(width: 14),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           'تصدير كل البيانات كملف إكسيل (Excel)',
-                                          style: AppTypography.titleMedium.copyWith(
+                                          style: AppTypography.titleMedium
+                                              .copyWith(
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
                                         Text(
                                           'يصدّر الطلبات، الأصناف، التصنيفات، المصروفات، الموردين، العملاء، حركات المخزون والشيفتات في أوراق عمل منفصلة.',
-                                          style: AppTypography.bodySmall.copyWith(
+                                          style:
+                                              AppTypography.bodySmall.copyWith(
                                             color: AppColors.textSecondary,
                                           ),
                                         ),
@@ -586,11 +642,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               SizedBox(
                                 height: AppDimensions.buttonHeightLg,
                                 child: ElevatedButton.icon(
-                                  onPressed: _isExporting ? null : _exportToExcel,
+                                  onPressed:
+                                      _isExporting ? null : _exportToExcel,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.success,
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20),
                                   ),
                                   icon: _isExporting
                                       ? const SizedBox(
@@ -603,7 +661,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                         )
                                       : const Icon(Icons.download_rounded),
                                   label: Text(
-                                    _isExporting ? 'جاري التصدير...' : 'تصدير إلى Excel (.xlsx)',
+                                    _isExporting
+                                        ? 'جاري التصدير...'
+                                        : 'تصدير إلى Excel (.xlsx)',
                                     style: AppTypography.button,
                                   ),
                                 ),
@@ -611,7 +671,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ],
                           ),
                         ),
-
 
                         const SizedBox(height: AppDimensions.space32),
 
@@ -639,7 +698,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.delete_forever_rounded,
                                     color: AppColors.error,
                                     size: 22,
@@ -670,7 +729,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                       ? null
                                       : _confirmDeleteAllSales,
                                   icon: _isDeletingSales
-                                      ? const SizedBox(
+                                      ? SizedBox(
                                           width: 18,
                                           height: 18,
                                           child: CircularProgressIndicator(
@@ -691,7 +750,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   ),
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: AppColors.error,
-                                    side: const BorderSide(
+                                    side: BorderSide(
                                       color: AppColors.error,
                                     ),
                                     padding: const EdgeInsets.symmetric(
@@ -728,10 +787,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           maxLength: 11,
           style: AppTypography.bodyMedium,
           validator: (v) {
-            if (v == null || v.trim().isEmpty)
+            if (v == null || v.trim().isEmpty) {
               return null; // رقم الهاتف اختياري
-            if (v.trim().length != 11)
+            }
+            if (v.trim().length != 11) {
               return 'رقم الهاتف يجب أن يكون 11 رقم بالضبط';
+            }
             return null;
           },
           decoration: InputDecoration(
@@ -744,11 +805,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-              borderSide: const BorderSide(color: AppColors.error),
+              borderSide: BorderSide(color: AppColors.error),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-              borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+              borderSide: BorderSide(color: AppColors.error, width: 1.5),
             ),
           ),
         ),
@@ -784,11 +845,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-              borderSide: const BorderSide(color: AppColors.error),
+              borderSide: BorderSide(color: AppColors.error),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-              borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+              borderSide: BorderSide(color: AppColors.error, width: 1.5),
             ),
           ),
         ),

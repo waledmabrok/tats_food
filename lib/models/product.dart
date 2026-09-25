@@ -83,7 +83,7 @@ class Product {
       stock: stock ?? this.stock,
       minStock: minStock ?? this.minStock,
       unit: unit ?? this.unit,
-      icon: icon ?? this.icon,
+      icon: icon ?? icon,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt,
       updatedAt: DateTime.now(),

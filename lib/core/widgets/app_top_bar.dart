@@ -25,7 +25,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return Container(
       height: AppDimensions.topBarHeight,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.topBarBg,
         border: Border(
           bottom: BorderSide(color: AppColors.topBarBorder, width: 1),
@@ -42,7 +42,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
                   IconButton(
                     tooltip: AppStrings.btnBack,
                     onPressed: onBack,
-                    icon: const Icon(Icons.arrow_forward_rounded),
+                    icon: const Icon(Icons.arrow_back_rounded),
                     color: AppColors.textSecondary,
                   ),
                   const SizedBox(width: AppDimensions.space4),
@@ -152,8 +152,7 @@ class _NotificationButtonState extends State<_NotificationButton> {
       builder: (dialogContext) => AlertDialog(
         title: Row(
           children: [
-            const Icon(Icons.notifications_active_outlined,
-                color: AppColors.primary),
+            Icon(Icons.notifications_active_outlined, color: AppColors.primary),
             const SizedBox(width: AppDimensions.space8),
             Text(AppStrings.topBarNotifications,
                 style: AppTypography.titleLarge),
@@ -172,14 +171,14 @@ class _NotificationButtonState extends State<_NotificationButton> {
                   children: [
                     if (shift != null)
                       ListTile(
-                        leading: const Icon(Icons.point_of_sale_outlined,
+                        leading: Icon(Icons.point_of_sale_outlined,
                             color: AppColors.success),
                         title: const Text('يوجد شيفت مفتوح'),
                         subtitle: Text('المسؤول: ${shift['user_name']}'),
                       ),
                     for (final product in products)
                       ListTile(
-                        leading: const Icon(Icons.warning_amber_rounded,
+                        leading: Icon(Icons.warning_amber_rounded,
                             color: AppColors.warning),
                         title: Text('مخزون منخفض: ${product['name']}'),
                         subtitle: Text(
@@ -225,7 +224,7 @@ class _NotificationButtonState extends State<_NotificationButton> {
             child: Container(
               constraints: const BoxConstraints(minWidth: 17, minHeight: 17),
               padding: const EdgeInsets.symmetric(horizontal: 4),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.error,
                 shape: BoxShape.circle,
               ),
@@ -265,7 +264,7 @@ class _DateChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
+          Icon(
             Icons.calendar_today_outlined,
             size: AppDimensions.iconSm,
             color: AppColors.primary,
@@ -369,7 +368,7 @@ class _UserChipState extends State<_UserChip> {
             shape: BoxShape.circle,
             border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.person_rounded,
             size: AppDimensions.iconMd,
             color: AppColors.primary,

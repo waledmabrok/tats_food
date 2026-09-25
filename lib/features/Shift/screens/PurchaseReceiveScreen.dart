@@ -134,8 +134,8 @@ class _PurchaseReceiveScreenState extends State<PurchaseReceiveScreen> {
         _rows.where((r) => r.itemId != null && r.quantity > 0).toList();
     if (validRows.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('ضيف صنف واحد على الأقل'),
+        SnackBar(
+          content: const Text('ضيف صنف واحد على الأقل'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -166,12 +166,14 @@ class _PurchaseReceiveScreenState extends State<PurchaseReceiveScreen> {
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('تم تسجيل الفاتورة وتحديث المخزون'),
+        SnackBar(
+          content: const Text('تم تسجيل الفاتورة وتحديث المخزون'),
           backgroundColor: AppColors.success,
         ),
       );
-      Navigator.pop(context);
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -204,7 +206,7 @@ class _PurchaseReceiveScreenState extends State<PurchaseReceiveScreen> {
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          value: _selectedSupplierId,
+                          initialValue: _selectedSupplierId,
                           items: _suppliers
                               .map(
                                 (s) => DropdownMenuItem(
@@ -362,7 +364,7 @@ class _PurchaseReceiveScreenState extends State<PurchaseReceiveScreen> {
               // نوع الصنف
               Expanded(
                 child: DropdownButtonFormField<String>(
-                  value: row.itemType,
+                  initialValue: row.itemType,
                   isDense: true,
                   items: const [
                     DropdownMenuItem(
@@ -393,7 +395,7 @@ class _PurchaseReceiveScreenState extends State<PurchaseReceiveScreen> {
               Expanded(
                 child: row.itemType == 'raw_material'
                     ? DropdownButtonFormField<String>(
-                        value: row.itemId,
+                        initialValue: row.itemId,
                         isDense: true,
                         hint: const Text('اختار الخامة'),
                         items: (items ?? [])
@@ -415,7 +417,7 @@ class _PurchaseReceiveScreenState extends State<PurchaseReceiveScreen> {
                         },
                       )
                     : DropdownButtonFormField<String>(
-                        value: row.itemId,
+                        initialValue: row.itemId,
                         isDense: true,
                         hint: const Text('اختار الصنف'),
                         items: _products

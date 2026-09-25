@@ -126,7 +126,7 @@ class _CashierTopBar extends StatelessWidget {
     return Container(
       height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.topBarBg,
         border: Border(bottom: BorderSide(color: AppColors.topBarBorder)),
       ),
@@ -152,7 +152,8 @@ class _CashierTopBar extends StatelessWidget {
 
           const Spacer(),
 
-          const Icon(Icons.person_rounded, color: AppColors.textSecondary, size: 18),
+          Icon(Icons.person_rounded, color: AppColors.textSecondary, size: 18),
+
           const SizedBox(width: 6),
           Text(
             userName,

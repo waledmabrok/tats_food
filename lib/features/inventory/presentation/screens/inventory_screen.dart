@@ -45,7 +45,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 && !_isLoadingMore && _hasMore) {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !_isLoadingMore &&
+        _hasMore) {
       _loadMore();
     }
   }
@@ -58,7 +61,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
     });
     try {
       final movements = await _stockRepo.getAll(limit: _limit, offset: _offset);
-      final lowStock = await _productRepo.getLowStock(limit: 50); // Optional pagination for low stock
+      final lowStock = await _productRepo.getLowStock(
+          limit: 50); // Optional pagination for low stock
       if (mounted) {
         setState(() {
           _movements = movements;
@@ -76,7 +80,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
     setState(() => _isLoadingMore = true);
     _offset += _limit;
     try {
-      final newMovements = await _stockRepo.getAll(limit: _limit, offset: _offset);
+      final newMovements =
+          await _stockRepo.getAll(limit: _limit, offset: _offset);
       if (mounted) {
         setState(() {
           _movements.addAll(newMovements);
@@ -105,19 +110,22 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     children: [
                       Container(
                         padding: const EdgeInsets.all(AppDimensions.space16),
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           color: AppColors.surface,
-                          border: Border(bottom: BorderSide(color: AppColors.divider)),
+                          border: Border(
+                              bottom: BorderSide(color: AppColors.divider)),
                         ),
                         child: Row(
                           children: [
-                            Text(AppStrings.inventoryMovements, style: AppTypography.titleMedium),
+                            Text(AppStrings.inventoryMovements,
+                                style: AppTypography.titleMedium),
                             const Spacer(),
                             ElevatedButton.icon(
                               onPressed: () => _showAddStockDialog(),
                               icon: const Icon(Icons.add_rounded),
                               label: const Text(AppStrings.inventoryAddStock),
-                              style: ElevatedButton.styleFrom(minimumSize: const Size(0, 40)),
+                              style: ElevatedButton.styleFrom(
+                                  minimumSize: const Size(0, 40)),
                             ),
                           ],
                         ),
@@ -127,7 +135,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
                             ? const EmptyStateWidget(
                                 icon: Icons.history_rounded,
                                 title: 'لا توجد حركات',
-                                description: 'لم يتم تسجيل أي حركة في المخزون حتى الآن.',
+                                description:
+                                    'لم يتم تسجيل أي حركة في المخزون حتى الآن.',
                               )
                             : _buildMovementsTable(),
                       ),
@@ -135,7 +144,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   ),
                 ),
 
-                const VerticalDivider(width: 1, color: AppColors.divider),
+                VerticalDivider(width: 1, color: AppColors.divider),
 
                 // ─── نواقص المخزون (يسار) ────────────────────────────
                 Expanded(
@@ -149,17 +158,23 @@ class _InventoryScreenState extends State<InventoryScreen> {
                           padding: const EdgeInsets.all(AppDimensions.space16),
                           child: Row(
                             children: [
-                              const Icon(Icons.warning_amber_rounded, color: AppColors.warning),
+                              Icon(Icons.warning_amber_rounded,
+                                  color: AppColors.warning),
                               const SizedBox(width: AppDimensions.space8),
-                              Text(AppStrings.inventoryLowStock, style: AppTypography.titleMedium),
+                              Text(AppStrings.inventoryLowStock,
+                                  style: AppTypography.titleMedium),
                               const Spacer(),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: AppColors.errorLight,
-                                  borderRadius: BorderRadius.circular(AppDimensions.radiusFull),
+                                  borderRadius: BorderRadius.circular(
+                                      AppDimensions.radiusFull),
                                 ),
-                                child: Text('${_lowStockProducts.length}', style: AppTypography.caption.copyWith(color: AppColors.error)),
+                                child: Text('${_lowStockProducts.length}',
+                                    style: AppTypography.caption
+                                        .copyWith(color: AppColors.error)),
                               ),
                             ],
                           ),
@@ -170,13 +185,16 @@ class _InventoryScreenState extends State<InventoryScreen> {
                               ? const EmptyStateWidget(
                                   icon: Icons.check_circle_outline,
                                   title: 'المخزون مكتمل',
-                                  description: 'لا توجد أي نواقص في المخزون حالياً.',
+                                  description:
+                                      'لا توجد أي نواقص في المخزون حالياً.',
                                   compact: true,
                                 )
                               : ListView.separated(
                                   itemCount: _lowStockProducts.length,
-                                  separatorBuilder: (_, __) => const Divider(height: 1),
-                                  itemBuilder: (ctx, i) => _LowStockTile(_lowStockProducts[i]),
+                                  separatorBuilder: (_, __) =>
+                                      const Divider(height: 1),
+                                  itemBuilder: (ctx, i) =>
+                                      _LowStockTile(_lowStockProducts[i]),
                                 ),
                         ),
                       ],
@@ -194,18 +212,21 @@ class _InventoryScreenState extends State<InventoryScreen> {
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space16, vertical: AppDimensions.space10),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.space16,
+                vertical: AppDimensions.space10),
             decoration: BoxDecoration(
               color: AppColors.surfaceVariant,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(AppDimensions.radiusMd)),
-              border: const Border(
+              borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(AppDimensions.radiusMd)),
+              border: Border(
                 top: BorderSide(color: AppColors.border),
                 left: BorderSide(color: AppColors.border),
                 right: BorderSide(color: AppColors.border),
               ),
             ),
-            child: const Row(
-              children: [
+            child: Row(
+              children: const [
                 Expanded(flex: 2, child: _TH('التاريخ')),
                 Expanded(flex: 1, child: _TH('الوقت')),
                 Expanded(flex: 3, child: _TH('الصنف')),
@@ -213,7 +234,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 Expanded(flex: 1, child: _TH('الكمية')),
                 Expanded(flex: 1, child: _TH('المخزون (بعد)')),
                 Expanded(flex: 2, child: _TH('السبب')),
-                const SizedBox(width: 40),
+                SizedBox(width: 40),
               ],
             ),
           ),
@@ -221,12 +242,14 @@ class _InventoryScreenState extends State<InventoryScreen> {
             child: Container(
               decoration: BoxDecoration(
                 border: Border.all(color: AppColors.border),
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(AppDimensions.radiusMd)),
+                borderRadius: const BorderRadius.vertical(
+                    bottom: Radius.circular(AppDimensions.radiusMd)),
               ),
               child: ListView.separated(
                 controller: _scrollController,
                 itemCount: _movements.length + (_isLoadingMore ? 1 : 0),
-                separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.divider),
+                separatorBuilder: (_, __) =>
+                    Divider(height: 1, color: AppColors.divider),
                 itemBuilder: (ctx, i) {
                   if (i == _movements.length) {
                     return const Padding(
@@ -252,7 +275,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(AppStrings.btnDelete, style: AppTypography.titleLarge),
-        content: Text('هل تريد حذف هذه الحركة نهائياً؟\nسيتم إخفاء هذا السجل فقط ولن يتم تعديل المخزون.',
+        content: Text(
+            'هل تريد حذف هذه الحركة نهائياً؟\nسيتم إخفاء هذا السجل فقط ولن يتم تعديل المخزون.',
             style: AppTypography.bodyMedium),
         actions: [
           TextButton(
@@ -282,7 +306,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
   void _showAddStockDialog() async {
     final products = await _productRepo.getAll(activeOnly: true);
     if (!mounted) return;
-    
+
     if (products.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('يجب إضافة أصناف أولاً')),
@@ -310,7 +334,9 @@ class _TH extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(label, style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600, color: AppColors.textSecondary));
+    return Text(label,
+        style: AppTypography.bodySmall.copyWith(
+            fontWeight: FontWeight.w600, color: AppColors.textSecondary));
   }
 }
 
@@ -321,23 +347,51 @@ class _MovementRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isOut = movement.type == StockMovementType.sale || movement.type == StockMovementType.stockOut;
+    final isOut = movement.type == StockMovementType.sale ||
+        movement.type == StockMovementType.stockOut;
     final qtyColor = isOut ? AppColors.error : AppColors.success;
     final qtyPrefix = isOut ? '-' : '+';
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space16, vertical: AppDimensions.space12),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.space16, vertical: AppDimensions.space12),
       child: Row(
         children: [
-          Expanded(flex: 2, child: Text(_formatDate(movement.createdAt), style: AppTypography.bodySmall)),
-          Expanded(flex: 1, child: Text(_formatTime(movement.createdAt), style: AppTypography.bodySmall)),
-          Expanded(flex: 3, child: Text(movement.productName, style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600))),
-          Expanded(flex: 1, child: Text(isOut ? 'خارج' : 'داخل', style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary))),
-          Expanded(flex: 1, child: Text('$qtyPrefix${movement.quantity.toStringAsFixed(0)}', style: AppTypography.bodySmall.copyWith(color: qtyColor, fontWeight: FontWeight.w700))),
-          Expanded(flex: 1, child: Text(movement.stockAfter.toStringAsFixed(0), style: AppTypography.bodySmall)),
-          Expanded(flex: 2, child: Text(movement.reason ?? '—', style: AppTypography.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis)),
+          Expanded(
+              flex: 2,
+              child: Text(_formatDate(movement.createdAt),
+                  style: AppTypography.bodySmall)),
+          Expanded(
+              flex: 1,
+              child: Text(_formatTime(movement.createdAt),
+                  style: AppTypography.bodySmall)),
+          Expanded(
+              flex: 3,
+              child: Text(movement.productName,
+                  style: AppTypography.bodySmall
+                      .copyWith(fontWeight: FontWeight.w600))),
+          Expanded(
+              flex: 1,
+              child: Text(isOut ? 'خارج' : 'داخل',
+                  style: AppTypography.bodySmall
+                      .copyWith(color: AppColors.textSecondary))),
+          Expanded(
+              flex: 1,
+              child: Text('$qtyPrefix${movement.quantity.toStringAsFixed(0)}',
+                  style: AppTypography.bodySmall
+                      .copyWith(color: qtyColor, fontWeight: FontWeight.w700))),
+          Expanded(
+              flex: 1,
+              child: Text(movement.stockAfter.toStringAsFixed(0),
+                  style: AppTypography.bodySmall)),
+          Expanded(
+              flex: 2,
+              child: Text(movement.reason ?? '—',
+                  style: AppTypography.bodySmall,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis)),
           IconButton(
-            icon: const Icon(Icons.delete_outline, color: AppColors.error, size: 20),
+            icon: Icon(Icons.delete_outline, color: AppColors.error, size: 20),
             onPressed: onDelete,
             tooltip: 'حذف',
           ),
@@ -366,7 +420,8 @@ class _LowStockTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space16, vertical: AppDimensions.space12),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.space16, vertical: AppDimensions.space12),
       child: Row(
         children: [
           Container(
@@ -376,15 +431,20 @@ class _LowStockTile extends StatelessWidget {
               color: AppColors.warningLight,
               borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
             ),
-            child: const Icon(Icons.warning_amber_rounded, size: 16, color: AppColors.warning),
+            child: Icon(Icons.warning_amber_rounded,
+                size: 16, color: AppColors.warning),
           ),
           const SizedBox(width: AppDimensions.space12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(product.name, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
-                Text('الحد الأدنى: ${product.minStock}', style: AppTypography.caption.copyWith(color: AppColors.textSecondary)),
+                Text(product.name,
+                    style: AppTypography.bodyMedium
+                        .copyWith(fontWeight: FontWeight.w600)),
+                Text('الحد الأدنى: ${product.minStock}',
+                    style: AppTypography.caption
+                        .copyWith(color: AppColors.textSecondary)),
               ],
             ),
           ),
@@ -411,7 +471,7 @@ class _AddStockDialog extends StatefulWidget {
 class _AddStockDialogState extends State<_AddStockDialog> {
   final _repo = ProductRepository();
   final _formKey = GlobalKey<FormState>();
-  
+
   String? _selectedProductId;
   final _qtyCtrl = TextEditingController();
   final _reasonCtrl = TextEditingController(text: 'شراء جديد');
@@ -420,7 +480,8 @@ class _AddStockDialogState extends State<_AddStockDialog> {
   @override
   void initState() {
     super.initState();
-    if (widget.products.isNotEmpty) _selectedProductId = widget.products.first.id;
+    if (widget.products.isNotEmpty)
+      _selectedProductId = widget.products.first.id;
   }
 
   @override
@@ -431,16 +492,17 @@ class _AddStockDialogState extends State<_AddStockDialog> {
   }
 
   Future<void> _save() async {
-    if (!_formKey.currentState!.validate() || _selectedProductId == null) return;
+    if (!_formKey.currentState!.validate() || _selectedProductId == null)
+      return;
     setState(() => _saving = true);
-    
+
     await _repo.addStock(
       productId: _selectedProductId!,
       quantity: double.parse(_qtyCtrl.text),
       reason: _reasonCtrl.text.trim(),
       userId: AppStrings.currentUser,
     );
-    
+
     widget.onSaved();
   }
 
@@ -459,61 +521,86 @@ class _AddStockDialogState extends State<_AddStockDialog> {
               children: [
                 Row(
                   children: [
-                    Text(AppStrings.inventoryAddStock, style: AppTypography.headlineSmall),
+                    Text(AppStrings.inventoryAddStock,
+                        style: AppTypography.headlineSmall),
                     const Spacer(),
-                    IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => Navigator.pop(context)),
+                    IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () => Navigator.pop(context)),
                   ],
                 ),
                 const SizedBox(height: 20),
-                
-                Text('الصنف', style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600)),
+                Text('الصنف',
+                    style: AppTypography.bodySmall
+                        .copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 6),
                 DropdownButtonFormField<String>(
-                  value: _selectedProductId,
-                  items: widget.products.map((p) => DropdownMenuItem(value: p.id, child: Text(p.name))).toList(),
+                  initialValue: _selectedProductId,
+                  items: widget.products
+                      .map((p) =>
+                          DropdownMenuItem(value: p.id, child: Text(p.name)))
+                      .toList(),
                   onChanged: (v) => setState(() => _selectedProductId = v),
                   decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusSm)),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                    border: OutlineInputBorder(
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.radiusSm)),
                   ),
                 ),
                 const SizedBox(height: 16),
-                
-                Text(AppStrings.inventoryQuantityToAdd, style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600)),
+                Text(AppStrings.inventoryQuantityToAdd,
+                    style: AppTypography.bodySmall
+                        .copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 6),
                 TextFormField(
                   controller: _qtyCtrl,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*'))],
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*'))
+                  ],
                   validator: (v) => v!.isEmpty ? 'مطلوب' : null,
                   decoration: InputDecoration(
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusSm)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    border: OutlineInputBorder(
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.radiusSm)),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
                   ),
                 ),
                 const SizedBox(height: 16),
-                
-                Text(AppStrings.inventoryReason, style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600)),
+                Text(AppStrings.inventoryReason,
+                    style: AppTypography.bodySmall
+                        .copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 6),
                 TextFormField(
                   controller: _reasonCtrl,
                   validator: (v) => v!.isEmpty ? 'مطلوب' : null,
                   decoration: InputDecoration(
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusSm)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    border: OutlineInputBorder(
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.radiusSm)),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
                   ),
                 ),
-                
                 const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    OutlinedButton(onPressed: () => Navigator.pop(context), child: const Text(AppStrings.btnCancel)),
+                    OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(AppStrings.btnCancel)),
                     const SizedBox(width: 12),
                     ElevatedButton(
                       onPressed: _saving ? null : _save,
                       child: _saving
-                          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2))
                           : const Text(AppStrings.btnSave),
                     ),
                   ],

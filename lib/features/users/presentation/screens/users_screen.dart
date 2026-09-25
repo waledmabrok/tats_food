@@ -30,11 +30,12 @@ class _UsersScreenState extends State<UsersScreen> {
   Future<void> _load() async {
     setState(() => _isLoading = true);
     final users = await _repo.getAll();
-    if (mounted)
+    if (mounted) {
       setState(() {
         _users = users;
         _isLoading = false;
       });
+    }
   }
 
   @override
@@ -46,7 +47,7 @@ class _UsersScreenState extends State<UsersScreen> {
           // شريط الأدوات
           Container(
             padding: const EdgeInsets.all(AppDimensions.space16),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.surface,
               border: Border(bottom: BorderSide(color: AppColors.divider)),
             ),
@@ -122,8 +123,8 @@ class _UsersScreenState extends State<UsersScreen> {
           .length;
       if (activeManagers <= 1) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('لا يمكن تعطيل مدير النظام الوحيد!'),
+          SnackBar(
+            content: const Text('لا يمكن تعطيل مدير النظام الوحيد!'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -334,8 +335,8 @@ class _UserDialogState extends State<_UserDialog> {
       setState(() => _saving = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('اسم المستخدم موجود بالفعل!'),
+          SnackBar(
+            content: const Text('اسم المستخدم موجود بالفعل!'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -495,7 +496,7 @@ class _UserDialogState extends State<_UserDialog> {
                 ),
                 const SizedBox(height: 6),
                 DropdownButtonFormField<UserRole>(
-                  value: _role,
+                  initialValue: _role,
                   items: UserRole.values
                       .map(
                         (r) => DropdownMenuItem(value: r, child: Text(r.label)),

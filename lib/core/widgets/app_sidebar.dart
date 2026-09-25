@@ -27,7 +27,7 @@ class AppSidebar extends StatelessWidget {
     return Container(
       width: AppDimensions.sidebarWidth,
       height: double.infinity,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.sidebarBg,
         border: Border(
           left: BorderSide(color: AppColors.sidebarDivider, width: 1),
@@ -120,7 +120,7 @@ class _SidebarHeaderState extends State<_SidebarHeader> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 begin: Alignment.topRight,
                 end: Alignment.bottomLeft,
                 colors: [AppColors.primary, AppColors.primaryDark],
@@ -290,7 +290,7 @@ class _SidebarItemState extends State<_SidebarItem> {
                     Container(
                       width: 4,
                       height: 4,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: AppColors.primary,
                         shape: BoxShape.circle,
                       ),
@@ -337,7 +337,7 @@ class _SidebarFooterState extends State<_SidebarFooter> {
                   shape: BoxShape.circle,
                   border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.person_rounded,
                   size: AppDimensions.iconMd,
                   color: AppColors.primary,

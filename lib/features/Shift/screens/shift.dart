@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:system_casher/features/Shift/screens/shift_history.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -208,17 +209,29 @@ class _ShiftScreenState extends State<ShiftScreen> {
     return Scaffold(
       appBar: AppTopBar(
         title: 'الشيفت',
-        action: SessionService.instance.isOwner && _currentShift != null
-            ? OutlinedButton.icon(
+        action: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ShiftHistoryScreen()),
+              ),
+              icon: const Icon(Icons.history_rounded),
+              tooltip: 'سجل الشيفتات',
+            ),
+            if (SessionService.instance.isOwner && _currentShift != null)
+              OutlinedButton.icon(
                 onPressed: _closeShiftDialog,
                 icon: const Icon(Icons.lock_clock_rounded),
                 label: const Text('قفل الشيفت'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.error,
-                  side: const BorderSide(color: AppColors.error),
+                  side: BorderSide(color: AppColors.error),
                 ),
-              )
-            : null,
+              ),
+          ],
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -236,6 +249,16 @@ class _ShiftScreenState extends State<ShiftScreen> {
                     ),
                     const SizedBox(height: AppDimensions.space24),
                     ManagerOnly(
+                      fallback: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Text(
+                          'قفل الشيفت متاح للمدير فقط',
+                          textAlign: TextAlign.center,
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
                       child: SizedBox(
                         width: double.infinity,
                         height: 52,
@@ -246,16 +269,6 @@ class _ShiftScreenState extends State<ShiftScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.error,
                             foregroundColor: Colors.white,
-                          ),
-                        ),
-                      ),
-                      fallback: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        child: Text(
-                          'قفل الشيفت متاح للمدير فقط',
-                          textAlign: TextAlign.center,
-                          style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.textSecondary,
                           ),
                         ),
                       ),
@@ -283,7 +296,7 @@ class _NoShiftCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Icon(
+          Icon(
             Icons.point_of_sale_rounded,
             size: 48,
             color: AppColors.textDisabled,
@@ -336,7 +349,7 @@ class _ShiftSummaryCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.badge_rounded, color: AppColors.primary),
+              Icon(Icons.badge_rounded, color: AppColors.primary),
               const SizedBox(width: 8),
               Text(
                 'الشيفت الحالي — ${shift['user_name']}',

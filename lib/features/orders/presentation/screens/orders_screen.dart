@@ -103,7 +103,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
               horizontal: AppDimensions.space16,
               vertical: AppDimensions.space12,
             ),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.surface,
               border: Border(bottom: BorderSide(color: AppColors.divider)),
             ),
@@ -200,7 +200,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(AppDimensions.radiusMd),
               ),
-              border: const Border(
+              border: Border(
                 top: BorderSide(color: AppColors.border),
                 left: BorderSide(color: AppColors.border),
                 right: BorderSide(color: AppColors.border),
@@ -231,7 +231,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 controller: _scrollController,
                 itemCount: _orders.length + (_isLoadingMore ? 1 : 0),
                 separatorBuilder: (_, __) =>
-                    const Divider(height: 1, color: AppColors.divider),
+                    Divider(height: 1, color: AppColors.divider),
                 itemBuilder: (ctx, i) {
                   if (i == _orders.length) {
                     return const Padding(
@@ -604,14 +604,14 @@ class _OrderDetailDialogState extends State<_OrderDetailDialog> {
                             height: 16,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Icon(
+                        : Icon(
                             Icons.cancel_outlined,
                             color: AppColors.error,
                             size: 18,
                           ),
                     label: Text(
                       _isCancelling ? 'جاري الإلغاء...' : 'إلغاء الطلب',
-                      style: const TextStyle(color: AppColors.error),
+                      style: TextStyle(color: AppColors.error),
                     ),
                   ),
                 ),

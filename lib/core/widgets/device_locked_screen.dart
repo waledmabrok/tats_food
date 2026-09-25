@@ -17,11 +17,12 @@ class DeviceLockedScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.lock_outline_rounded,
                 size: 72,
                 color: AppColors.error,
               ),
+
               const SizedBox(height: 24),
               Text(
                 'هذا التطبيق مرتبط بجهاز آخر',

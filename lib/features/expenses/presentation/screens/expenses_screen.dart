@@ -35,11 +35,12 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     setState(() => _isLoading = true);
     final expenses =
         await _repo.getAll(from: _dateRange?.start, to: _dateRange?.end);
-    if (mounted)
+    if (mounted) {
       setState(() {
         _expenses = expenses;
         _isLoading = false;
       });
+    }
   }
 
   @override
@@ -53,10 +54,11 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.space16,
                 vertical: AppDimensions.space12),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.surface,
               border: Border(bottom: BorderSide(color: AppColors.divider)),
             ),
+
             child: Row(
               children: [
                 OutlinedButton.icon(
@@ -140,7 +142,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                                 borderRadius: const BorderRadius.vertical(
                                     top: Radius.circular(
                                         AppDimensions.radiusMd)),
-                                border: const Border(
+                                border: Border(
                                   top: BorderSide(color: AppColors.border),
                                   left: BorderSide(color: AppColors.border),
                                   right: BorderSide(color: AppColors.border),
@@ -166,9 +168,10 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                                 ),
                                 child: ListView.separated(
                                   itemCount: _expenses.length,
-                                  separatorBuilder: (_, __) => const Divider(
+                                  separatorBuilder: (_, __) => Divider(
                                       height: 1, color: AppColors.divider),
                                   itemBuilder: (ctx, i) => _ExpenseRow(
+
                                     expense: _expenses[i],
                                     onEdit: () =>
                                         _showDialog(expense: _expenses[i]),

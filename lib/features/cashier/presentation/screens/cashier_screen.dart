@@ -18,7 +18,7 @@ import '../../../products/presentation/screens/products_screen.dart';
 
 // ─── عنصر في السلة ────────────────────────────────────────────────────────
 class _CartItem {
-  _CartItem({required this.product, this.quantity = 1});
+  _CartItem({required this.product}) : quantity = 1;
 
   final Product product;
   int quantity;
@@ -310,8 +310,8 @@ class _CashierScreenState extends State<CashierScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(AppStrings.msgError),
+        SnackBar(
+          content: const Text(AppStrings.msgError),
           backgroundColor: AppColors.error,
         ),
       );
@@ -336,7 +336,7 @@ class _CashierScreenState extends State<CashierScreen> {
                     color: AppColors.successLight,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.check_rounded,
                     color: AppColors.success,
                     size: 40,
@@ -404,7 +404,7 @@ class _CashierScreenState extends State<CashierScreen> {
                                   ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.print_rounded,
                                   color: AppColors.primary,
                                   size: 18,
@@ -430,7 +430,7 @@ class _CashierScreenState extends State<CashierScreen> {
                                   ],
                                 ),
                               ),
-                              const Icon(
+                              Icon(
                                 Icons.chevron_left_rounded,
                                 color: AppColors.textSecondary,
                                 size: 18,
@@ -439,7 +439,7 @@ class _CashierScreenState extends State<CashierScreen> {
                           ),
                         ),
                       ),
-                      const Divider(height: 1, color: AppColors.border),
+                      Divider(height: 1, color: AppColors.border),
                       // طباعة للمطبخ
                       InkWell(
                         onTap: () =>
@@ -463,7 +463,7 @@ class _CashierScreenState extends State<CashierScreen> {
                                   ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.receipt_long_rounded,
                                   color: AppColors.success,
                                   size: 18,
@@ -489,7 +489,7 @@ class _CashierScreenState extends State<CashierScreen> {
                                   ],
                                 ),
                               ),
-                              const Icon(
+                              Icon(
                                 Icons.chevron_left_rounded,
                                 color: AppColors.textSecondary,
                                 size: 18,
@@ -560,7 +560,7 @@ class _CashierScreenState extends State<CashierScreen> {
                 ),
 
                 // ─── فاصل ─────────────────────────────────────────
-                const VerticalDivider(width: 1, color: AppColors.divider),
+                VerticalDivider(width: 1, color: AppColors.divider),
 
                 // ─── السلة (يسار) ─────────────────────────────────
                 SizedBox(
@@ -703,7 +703,7 @@ class _ProductsPanelState extends State<_ProductsPanel> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.search_off_rounded,
                         size: 64,
                         color: AppColors.textDisabled,
@@ -885,7 +885,7 @@ class _ProductCardState extends State<_ProductCard> {
                               style: const TextStyle(fontSize: 24),
                             ),
                           )
-                        : const Icon(
+                        : Icon(
                             Icons.fastfood_rounded,
                             color: AppColors.primary,
                             size: 24,
@@ -1043,7 +1043,7 @@ class _CartPanel extends StatelessWidget {
               horizontal: AppDimensions.space16,
               vertical: AppDimensions.space12,
             ),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(bottom: BorderSide(color: AppColors.divider)),
             ),
             child: Row(
@@ -1070,7 +1070,7 @@ class _CartPanel extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.shopping_cart_outlined,
                           size: 56,
                           color: AppColors.textDisabled,
@@ -1110,7 +1110,7 @@ class _CartPanel extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               color: AppColors.surface,
-              border: const Border(
+              border: Border(
                 top: BorderSide(color: AppColors.border, width: 1),
               ),
               boxShadow: [
@@ -1568,8 +1568,8 @@ class _PaymentDialogState extends State<_PaymentDialog> {
             _phoneCtrl.text.trim().isEmpty ||
             _addressCtrl.text.trim().isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('اكتب رقم العميل وعنوان التوصيل أولًا'),
+        SnackBar(
+          content: const Text('اكتب رقم العميل وعنوان التوصيل أولًا'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -1577,8 +1577,8 @@ class _PaymentDialogState extends State<_PaymentDialog> {
     }
     if (_paid < widget.total && _method == PaymentMethod.cash) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('المبلغ المدفوع أقل من الإجمالي'),
+        SnackBar(
+          content: const Text('المبلغ المدفوع أقل من الإجمالي'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -1661,7 +1661,7 @@ class _PaymentDialogState extends State<_PaymentDialog> {
                     if (_orderType == OrderType.delivery) ...[
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
-                        value: _selectedCustomerId,
+                        initialValue: _selectedCustomerId,
                         items: _customers
                             .map(
                               (customer) => DropdownMenuItem<String>(
@@ -1671,9 +1671,9 @@ class _PaymentDialogState extends State<_PaymentDialog> {
                             )
                             .toList(),
                         onChanged: _selectCustomer,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'العميل المحفوظ',
-                          prefixIcon: Icon(Icons.person_outline),
+                          prefixIcon: const Icon(Icons.person_outline),
                           filled: true,
                           fillColor: AppColors.surface,
                         ),
@@ -1681,9 +1681,9 @@ class _PaymentDialogState extends State<_PaymentDialog> {
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: _customerNameCtrl,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'اسم العميل الجديد',
-                          prefixIcon: Icon(Icons.badge_outlined),
+                          prefixIcon: const Icon(Icons.badge_outlined),
                           filled: true,
                           fillColor: AppColors.surface,
                         ),
@@ -1692,9 +1692,9 @@ class _PaymentDialogState extends State<_PaymentDialog> {
                       TextFormField(
                         controller: _phoneCtrl,
                         keyboardType: TextInputType.phone,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'رقم العميل',
-                          prefixIcon: Icon(Icons.phone_outlined),
+                          prefixIcon: const Icon(Icons.phone_outlined),
                           filled: true,
                           fillColor: AppColors.surface,
                         ),
@@ -1703,9 +1703,9 @@ class _PaymentDialogState extends State<_PaymentDialog> {
                       TextFormField(
                         controller: _addressCtrl,
                         maxLines: 2,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'عنوان التوصيل',
-                          prefixIcon: Icon(Icons.location_on_outlined),
+                          prefixIcon: const Icon(Icons.location_on_outlined),
                           filled: true,
                           fillColor: AppColors.surface,
                         ),
@@ -1842,7 +1842,7 @@ class _PaymentDialogState extends State<_PaymentDialog> {
                             borderRadius: BorderRadius.circular(
                               AppDimensions.radiusMd,
                             ),
-                            borderSide: const BorderSide(
+                            borderSide: BorderSide(
                               color: AppColors.primary,
                               width: 2,
                             ),
@@ -1916,9 +1916,9 @@ class _PaymentDialogState extends State<_PaymentDialog> {
               flex: 4,
               child: Container(
                 padding: const EdgeInsets.all(AppDimensions.space32),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: AppColors.sidebarBg,
-                  borderRadius: BorderRadius.horizontal(
+                  borderRadius: const BorderRadius.horizontal(
                     left: Radius.circular(AppDimensions.radiusLg),
                   ),
                 ),
@@ -1942,8 +1942,8 @@ class _PaymentDialogState extends State<_PaymentDialog> {
                         color: AppColors.success,
                       ),
                     ],
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 24),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
                       child: Divider(
                         color: AppColors.sidebarDivider,
                         thickness: 2,
@@ -2005,7 +2005,7 @@ class _PaymentDialogState extends State<_PaymentDialog> {
                           child: OutlinedButton(
                             onPressed: () => Navigator.pop(context),
                             style: OutlinedButton.styleFrom(
-                              side: const BorderSide(
+                              side: BorderSide(
                                 color: AppColors.sidebarText,
                               ),
                               foregroundColor: Colors.white,

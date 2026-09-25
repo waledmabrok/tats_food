@@ -22,7 +22,9 @@ void main() async {
   // ─── التحقق من ربط الجهاز ────────────────────────────────────────
   final deviceCheck = await DeviceLockService.instance.checkDevice();
 
-  runApp(FoodProApp(isDeviceLocked: deviceCheck == DeviceCheckResult.mismatch));
+  runApp(
+    FoodProApp(isDeviceLocked: deviceCheck == DeviceCheckResult.mismatch),
+  );
 }
 
 /// نقطة الدخول الرئيسية لنظام فود برو
@@ -51,32 +53,33 @@ class _FoodProAppState extends State<FoodProApp> {
 
   @override
   Widget build(BuildContext context) {
-  return MaterialApp(
-  title: AppStrings.appName,
-  debugShowCheckedModeBanner: false,
+    return MaterialApp(
+      title: AppStrings.appName,
+      debugShowCheckedModeBanner: false,
 
-  localizationsDelegates: const [
-    GlobalMaterialLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-  ],
-  supportedLocales: const [
-    Locale('ar'),
-    Locale('en'),
-  ],
-  locale: const Locale('ar'),
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('ar'),
+        Locale('en'),
+      ],
+      locale: const Locale('ar'),
 
-  // ─── الـ Theme المركزي ─────────────────────────────────
-  theme: AppTheme.light,
-  darkTheme: AppTheme.dark,
-  themeMode: ThemeController.instance.mode,
+      // ─── الـ Theme المركزي ─────────────────────────────────
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: ThemeController.instance.mode,
 
-  // منع Flutter من عمل interpolation بين TextStyles
-  // المختلفة عند تغيير Light / Dark.
-  themeAnimationDuration: Duration.zero,
+      // منع Flutter من عمل interpolation بين TextStyles
+      // المختلفة عند تغيير Light / Dark.
+      themeAnimationDuration: Duration.zero,
 
-  home: widget.isDeviceLocked
-      ? const DeviceLockedScreen()
-      : const LoginScreen(),
-);}
+      home: widget.isDeviceLocked
+          ? const DeviceLockedScreen()
+          : const LoginScreen(),
+    );
+  }
 }

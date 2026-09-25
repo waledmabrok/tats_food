@@ -63,7 +63,7 @@ class _RecentOrdersState extends State<RecentOrders> {
           _isLoading 
               ? const SizedBox(height: 150, child: Center(child: CircularProgressIndicator()))
               : _orders.isEmpty
-                  ? const EmptyStateWidget(
+                  ? EmptyStateWidget(
                       icon: Icons.receipt_long_outlined,
                       iconColor: AppColors.textDisabled,
                       title: AppStrings.recentOrdersEmpty,
@@ -74,9 +74,10 @@ class _RecentOrdersState extends State<RecentOrders> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: _orders.length,
-                      separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.divider),
+                      separatorBuilder: (_, __) => Divider(height: 1, color: AppColors.divider),
                       itemBuilder: (ctx, i) => _OrderRow(order: _orders[i]),
                     ),
+
         ],
       ),
     );

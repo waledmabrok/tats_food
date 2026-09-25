@@ -177,10 +177,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
           Container(
             padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.space16, vertical: AppDimensions.space12),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.surface,
               border: Border(bottom: BorderSide(color: AppColors.divider)),
             ),
+
             child: Row(
               children: [
                 OutlinedButton.icon(
@@ -318,7 +319,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.bar_chart_rounded, color: AppColors.primary, size: 20),
+              Icon(Icons.bar_chart_rounded, color: AppColors.primary, size: 20),
               const SizedBox(width: 8),
               Text('مبيعات آخر 7 أيام', style: AppTypography.titleMedium),
             ],
@@ -331,8 +332,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.bar_chart_outlined, size: 48, color: AppColors.textDisabled),
+                        Icon(Icons.bar_chart_outlined, size: 48, color: AppColors.textDisabled),
                         const SizedBox(height: 8),
+
                         Text(
                           'لا توجد مبيعات في هذه الفترة',
                           style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
@@ -375,11 +377,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.star_rounded, color: AppColors.warning, size: 20),
+              Icon(Icons.star_rounded, color: AppColors.warning, size: 20),
               const SizedBox(width: 8),
               Text('الأصناف الأكثر مبيعاً', style: AppTypography.titleMedium),
             ],
           ),
+
           const SizedBox(height: AppDimensions.space16),
           if (_topProducts.isEmpty)
             Padding(
@@ -470,15 +473,16 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Color _rankColor(int i) {
-    const colors = [
-      Color(0xFFF59E0B), // ذهبي
-      Color(0xFF94A3B8), // فضي
-      Color(0xFFCD7F32), // برونزي
+    final colors = [
+      const Color(0xFFF59E0B), // ذهبي
+      const Color(0xFF94A3B8), // فضي
+      const Color(0xFFCD7F32), // برونزي
       AppColors.primary,
       AppColors.info,
     ];
     return colors[i % colors.length];
   }
+
 }
 
 // ─── BarChart CustomPainter ────────────────────────────────────────────────

@@ -26,11 +26,12 @@ class DeviceMismatchScreen extends StatelessWidget {
                     color: AppColors.error.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.gpp_bad_rounded,
                     size: 64,
                     color: AppColors.error,
                   ),
+
                 ),
                 const SizedBox(height: AppDimensions.space32),
 

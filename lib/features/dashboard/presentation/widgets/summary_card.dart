@@ -40,13 +40,14 @@ class SummaryCard extends StatelessWidget {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         border: Border.all(color: AppColors.borderLight),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
             color: AppColors.cardShadow,
             blurRadius: AppDimensions.shadowBlur,
             offset: Offset(0, AppDimensions.shadowOffset),
           ),
         ],
+
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

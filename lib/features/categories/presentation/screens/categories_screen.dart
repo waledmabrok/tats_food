@@ -52,7 +52,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               horizontal: AppDimensions.space24,
               vertical: AppDimensions.space16,
             ),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.surface,
               border: Border(bottom: BorderSide(color: AppColors.border)),
             ),
@@ -71,7 +71,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.category_rounded, size: 16, color: AppColors.primary),
+                      Icon(Icons.category_rounded, size: 16, color: AppColors.primary),
                       const SizedBox(width: 6),
                       Text(
                         '${_categories.length} تصنيف',
@@ -101,7 +101,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           ),
           Expanded(
             child: _isLoading
-                ? const Center(
+                ? Center(
                     child: CircularProgressIndicator(color: AppColors.primary),
                   )
                 : _categories.isEmpty
@@ -436,7 +436,7 @@ class _CategoryCardState extends State<_CategoryCard> {
                           color: AppColors.info.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                         ),
-                        child: const Icon(Icons.edit_outlined, size: 16, color: AppColors.info),
+                        child: Icon(Icons.edit_outlined, size: 16, color: AppColors.info),
                       ),
                     ),
                   ),
@@ -477,7 +477,7 @@ class _CategoryCardState extends State<_CategoryCard> {
                           color: AppColors.error.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                         ),
-                        child: const Icon(Icons.delete_outline_rounded, size: 16, color: AppColors.error),
+                        child: Icon(Icons.delete_outline_rounded, size: 16, color: AppColors.error),
                       ),
                     ),
                   ),
@@ -570,7 +570,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                       color: AppColors.primary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                     ),
-                    child: const Icon(Icons.category_rounded, color: AppColors.primary, size: 20),
+                    child: Icon(Icons.category_rounded, color: AppColors.primary, size: 20),
                   ),
                   const SizedBox(width: AppDimensions.space12),
                   Expanded(

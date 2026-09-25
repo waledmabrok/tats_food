@@ -158,8 +158,7 @@ class _WorkflowStep extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(Icons.check_circle_outline,
-            color: AppColors.success, size: 20),
+        Icon(Icons.check_circle_outline, color: AppColors.success, size: 20),
         const SizedBox(width: AppDimensions.space8),
         Text(step, style: AppTypography.bodyMedium),
       ],
@@ -198,7 +197,7 @@ class _SectionContent {
 
 _SectionContent _sectionContent(ManagementSection section) {
   return switch (section) {
-    ManagementSection.suppliers => const _SectionContent(
+    ManagementSection.suppliers => _SectionContent(
         title: 'الموردون',
         subtitle: 'إدارة الموردين وفواتير الشراء والمدفوعات الآجلة.',
         icon: Icons.local_shipping_rounded,
@@ -218,7 +217,7 @@ _SectionContent _sectionContent(ManagementSection section) {
           'تسجيل السداد وكشف الحساب'
         ],
       ),
-    ManagementSection.customers => const _SectionContent(
+    ManagementSection.customers => _SectionContent(
         title: 'العملاء والدليفري',
         subtitle: 'حفظ بيانات العملاء وعناوينهم ومتابعة طلبات التوصيل.',
         icon: Icons.delivery_dining_rounded,
@@ -237,7 +236,7 @@ _SectionContent _sectionContent(ManagementSection section) {
           'ربط العميل بالطلب والتحصيل'
         ],
       ),
-    ManagementSection.shifts => const _SectionContent(
+    ManagementSection.shifts => _SectionContent(
         title: 'الشيفتات والدرج',
         subtitle: 'متابعة مبيعات كل شيفت ومطابقة النقد الموجود في الدرج.',
         icon: Icons.point_of_sale_rounded,
@@ -257,7 +256,7 @@ _SectionContent _sectionContent(ManagementSection section) {
           'إدخال النقد الفعلي وتسجيل العجز أو الزيادة'
         ],
       ),
-    ManagementSection.rawMaterials => const _SectionContent(
+    ManagementSection.rawMaterials => _SectionContent(
         title: 'الخامات والوصفات',
         subtitle: 'إدارة الخامات والوحدات والوصفات وحساب تكلفة الأصناف.',
         icon: Icons.science_rounded,
@@ -277,7 +276,7 @@ _SectionContent _sectionContent(ManagementSection section) {
           'استهلاك الخامة عند البيع وإعادة حساب الربح'
         ],
       ),
-    ManagementSection.accounting => const _SectionContent(
+    ManagementSection.accounting => _SectionContent(
         title: 'الحسابات',
         subtitle: 'دليل الحسابات والقيود والحركة النقدية والتقارير المالية.',
         icon: Icons.account_balance_rounded,
@@ -297,7 +296,7 @@ _SectionContent _sectionContent(ManagementSection section) {
           'عرض الأرباح والخسائر والتدفق النقدي'
         ],
       ),
-    ManagementSection.employees => const _SectionContent(
+    ManagementSection.employees => _SectionContent(
         title: 'الموظفون والرواتب',
         subtitle: 'إدارة الموظفين والرواتب والسلف والمدفوعات المتبقية.',
         icon: Icons.badge_rounded,
@@ -428,7 +427,7 @@ class _ManagementRecordsScreenState extends State<_ManagementRecordsScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(AppDimensions.space16),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.surface,
               border: Border(bottom: BorderSide(color: AppColors.divider)),
             ),
@@ -560,7 +559,7 @@ class _ManagementRecordsScreenState extends State<_ManagementRecordsScreen> {
             IconButton(
               tooltip: 'حذف الخامة',
               onPressed: () => _hideRawMaterial(record),
-              icon: const Icon(Icons.delete_outline, color: AppColors.error),
+              icon: Icon(Icons.delete_outline, color: AppColors.error),
             ),
           ],
         ],
@@ -894,7 +893,7 @@ class _EmployeeTransactionDialogState
         mainAxisSize: MainAxisSize.min,
         children: [
           DropdownButtonFormField<String>(
-            value: _type,
+            initialValue: _type,
             items: const [
               DropdownMenuItem(value: 'advance', child: Text('سلفة')),
               DropdownMenuItem(
@@ -944,11 +943,12 @@ class _AccountsScreenState extends State<_AccountsScreen> {
   Future<void> _load() async {
     setState(() => _loading = true);
     final accounts = await DatabaseHelper.instance.getAccounts();
-    if (mounted)
+    if (mounted) {
       setState(() {
         _accounts = accounts;
         _loading = false;
       });
+    }
   }
 
   String _typeLabel(String type) => switch (type) {
@@ -1177,11 +1177,12 @@ class _RecipesScreenState extends State<RecipesScreen> {
 
   Future<void> _load() async {
     final products = await _productsRepo.getAll(activeOnly: true, limit: 1000);
-    if (mounted)
+    if (mounted) {
       setState(() {
         _products = products;
         _loading = false;
       });
+    }
   }
 
   Future<void> _edit(Product product) async {
@@ -1298,16 +1299,19 @@ class _RecipeDialogState extends State<_RecipeDialog> {
         text: match == null ? '' : '${match['quantity_used']}',
       );
     }
-    if (mounted)
+    if (mounted) {
       setState(() {
         _materials = materials;
         _loading = false;
       });
+    }
   }
 
   @override
   void dispose() {
-    for (final controller in _quantities.values) controller.dispose();
+    for (final controller in _quantities.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 

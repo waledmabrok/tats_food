@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../../core/database/database_helper.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -147,11 +146,11 @@ class _LoginScreenState extends State<LoginScreen> {
         borderRadius: BorderRadius.circular(28),
         color: AppColors.surface,
         border: Border.all(color: AppColors.border),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
             color: AppColors.cardShadow,
             blurRadius: 20,
-            offset: Offset(0, 10),
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -193,7 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
           const SizedBox(height: 34),
           Row(
             children: [
-              const Icon(Icons.lock_outline_rounded,
+              Icon(Icons.lock_outline_rounded,
                   color: AppColors.success, size: 18),
               const SizedBox(width: 8),
               Text('بياناتك محفوظة محليًا وآمنة',
@@ -345,7 +344,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.error_outline_rounded,
                     color: AppColors.error,
                     size: 18,
@@ -500,7 +499,7 @@ class _RoleCard extends StatelessWidget {
                 ),
               ),
               if (selected)
-                const Icon(Icons.check_circle_rounded,
+                Icon(Icons.check_circle_rounded,
                     size: 18, color: AppColors.primary),
             ],
           ),
@@ -518,11 +517,11 @@ class _LoginField extends StatelessWidget {
     required this.controller,
     required this.focusNode,
     required this.icon,
-    this.nextFocus,
     this.obscureText = false,
     this.suffixIcon,
     this.onSubmitted,
     this.textInputAction = TextInputAction.next,
+    this.nextFocus,
     this.autofocus = false,
   });
 
@@ -575,15 +574,15 @@ class _LoginField extends StatelessWidget {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.border),
+              borderSide: BorderSide(color: AppColors.border),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.border),
+              borderSide: BorderSide(color: AppColors.border),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
+              borderSide: BorderSide(
                 color: AppColors.primary,
                 width: 1.5,
               ),

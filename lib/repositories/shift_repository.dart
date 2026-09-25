@@ -9,11 +9,9 @@ class ShiftRepository {
     required String userId,
     required String userName,
     required double openingCash,
-  }) => _db.openShift(
-    userId: userId,
-    userName: userName,
-    openingCash: openingCash,
-  );
+  }) =>
+      _db.openShift(
+          userId: userId, userName: userName, openingCash: openingCash);
 
   /// ملخص لحظي (يُستخدم للعرض والشيفت لسه مفتوح)
   Future<Map<String, dynamic>> getShiftSummary(String shiftId) =>
@@ -24,12 +22,34 @@ class ShiftRepository {
     String shiftId, {
     required double actualClosingCash,
     String? notes,
-  }) => _db.closeShift(
-    shiftId,
-    actualClosingCash: actualClosingCash,
-    notes: notes,
-  );
+  }) =>
+      _db.closeShift(shiftId,
+          actualClosingCash: actualClosingCash, notes: notes);
 
-  Future<List<Map<String, dynamic>>> getHistory({int limit = 30}) =>
-      _db.getShiftsHistory(limit: limit);
+  /// سجل الشيفتات، مع إمكانية فلترة بالتاريخ (based on opened_at)
+  Future<List<Map<String, dynamic>>> getHistory({
+    DateTime? from,
+    DateTime? to,
+    int limit = 200,
+  }) async {
+    final conditions = <String>[];
+    final args = <dynamic>[];
+
+    if (from != null) {
+      conditions.add("date(opened_at) >= date(?)");
+      args.add(from.toIso8601String());
+    }
+    if (to != null) {
+      conditions.add("date(opened_at) <= date(?)");
+      args.add(to.toIso8601String());
+    }
+
+    return _db.query(
+      'shifts',
+      where: conditions.isEmpty ? null : conditions.join(' AND '),
+      whereArgs: args.isEmpty ? null : args,
+      orderBy: 'opened_at DESC',
+      limit: limit,
+    );
+  }
 }

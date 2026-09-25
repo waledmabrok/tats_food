@@ -13,12 +13,13 @@ class DashboardHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.cardPadding),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surface,
         border: Border(
           bottom: BorderSide(color: AppColors.divider, width: 1),
         ),
       ),
+
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [

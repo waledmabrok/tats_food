@@ -267,7 +267,7 @@ class _ProductsToolbarState extends State<_ProductsToolbar> {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.space16),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surface,
         border: Border(bottom: BorderSide(color: AppColors.divider)),
       ),
@@ -287,16 +287,16 @@ class _ProductsToolbarState extends State<_ProductsToolbar> {
                   contentPadding: EdgeInsets.zero,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                    borderSide: const BorderSide(color: AppColors.border),
+                    borderSide: BorderSide(color: AppColors.border),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                    borderSide: const BorderSide(color: AppColors.border),
+                    borderSide: BorderSide(color: AppColors.border),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                     borderSide:
-                        const BorderSide(color: AppColors.primary, width: 1.5),
+                        BorderSide(color: AppColors.primary, width: 1.5),
                   ),
                 ),
                 onChanged: widget.onSearchChanged,
@@ -311,7 +311,7 @@ class _ProductsToolbarState extends State<_ProductsToolbar> {
             child: SizedBox(
               height: 40,
               child: DropdownButtonFormField<String?>(
-                value: widget.selectedCategoryId,
+                initialValue: widget.selectedCategoryId,
                 decoration: InputDecoration(
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -320,7 +320,7 @@ class _ProductsToolbarState extends State<_ProductsToolbar> {
                           BorderRadius.circular(AppDimensions.radiusSm)),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                    borderSide: const BorderSide(color: AppColors.border),
+                    borderSide: BorderSide(color: AppColors.border),
                   ),
                 ),
                 hint: Text('كل التصنيفات', style: AppTypography.bodyMedium),
@@ -404,7 +404,7 @@ class _ProductTable extends StatelessWidget {
               color: AppColors.surfaceVariant,
               borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(AppDimensions.radiusMd)),
-              border: const Border(
+              border: Border(
                 top: BorderSide(color: AppColors.border),
                 left: BorderSide(color: AppColors.border),
                 right: BorderSide(color: AppColors.border),
@@ -433,7 +433,7 @@ class _ProductTable extends StatelessWidget {
                 controller: scrollController,
                 itemCount: products.length + (isLoadingMore ? 1 : 0),
                 separatorBuilder: (_, __) =>
-                    const Divider(height: 1, color: AppColors.divider),
+                    Divider(height: 1, color: AppColors.divider),
                 itemBuilder: (ctx, i) {
                   if (i == products.length) {
                     return const Padding(
@@ -534,7 +534,7 @@ class _ProductRowState extends State<_ProductRow> {
                       borderRadius:
                           BorderRadius.circular(AppDimensions.radiusSm),
                     ),
-                    child: const Icon(Icons.fastfood_outlined,
+                    child: Icon(Icons.fastfood_outlined,
                         size: 18, color: AppColors.primary),
                   ),
                   const SizedBox(width: AppDimensions.space10),
@@ -551,7 +551,7 @@ class _ProductRowState extends State<_ProductRow> {
                       child: Container(
                         margin: const EdgeInsets.only(right: 4),
                         padding: const EdgeInsets.all(2),
-                        child: const Icon(Icons.warning_amber_rounded,
+                        child: Icon(Icons.warning_amber_rounded,
                             size: 16, color: AppColors.warning),
                       ),
                     ),
@@ -650,6 +650,7 @@ class _StatusBadge extends StatelessWidget {
 // ─── Dialog إضافة / تعديل صنف ────────────────────────────────────────────
 class ProductDialog extends StatefulWidget {
   const ProductDialog({
+    super.key,
     this.product,
     required this.categories,
     required this.onSaved,
@@ -831,7 +832,7 @@ class _ProductDialogState extends State<ProductDialog> {
                                   .copyWith(fontWeight: FontWeight.w600)),
                           const SizedBox(height: 6),
                           DropdownButtonFormField<String>(
-                            value: _selectedCategoryId,
+                            initialValue: _selectedCategoryId,
                             items: widget.categories
                                 .map((cat) => DropdownMenuItem(
                                       value: cat.id,
@@ -920,8 +921,9 @@ class _ProductDialogState extends State<ProductDialog> {
                             decimal: true),
                         validator: (v) {
                           if (v == null || v.isEmpty) return 'السعر مطلوب';
-                          if (double.tryParse(_toLatinDigits(v)) == null)
+                          if (double.tryParse(_toLatinDigits(v)) == null) {
                             return 'أدخل رقم صحيح';
+                          }
                           return null;
                         },
                       ),
@@ -935,8 +937,9 @@ class _ProductDialogState extends State<ProductDialog> {
                             decimal: true),
                         validator: (v) {
                           if (v == null || v.isEmpty) return 'الكمية مطلوبة';
-                          if (double.tryParse(_toLatinDigits(v)) == null)
+                          if (double.tryParse(_toLatinDigits(v)) == null) {
                             return 'أدخل رقم صحيح';
+                          }
                           return null;
                         },
                       ),
@@ -950,7 +953,7 @@ class _ProductDialogState extends State<ProductDialog> {
                   children: [
                     Switch(
                       value: _isActive,
-                      activeColor: AppColors.success,
+                      activeThumbColor: AppColors.success,
                       onChanged: (v) => setState(() => _isActive = v),
                     ),
                     const SizedBox(width: AppDimensions.space8),
@@ -1002,10 +1005,9 @@ class _FormField extends StatelessWidget {
     required this.label,
     required this.controller,
     this.keyboardType,
-    this.inputFormatters,
     this.validator,
     this.autofocus = false,
-  });
+  }) : inputFormatters = null;
 
   final String label;
   final TextEditingController controller;

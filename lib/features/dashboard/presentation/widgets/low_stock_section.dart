@@ -61,13 +61,14 @@ class _LowStockSectionState extends State<LowStockSection> {
           _isLoading 
               ? const SizedBox(height: 150, child: Center(child: CircularProgressIndicator()))
               : _lowStock.isEmpty
-                  ? const EmptyStateWidget(
+                  ? EmptyStateWidget(
                       icon: Icons.inventory_2_outlined,
                       iconColor: AppColors.success,
                       title: AppStrings.lowStockEmpty,
                       description: AppStrings.lowStockEmptyDesc,
                       compact: true,
                     )
+
                   : SizedBox(
                       height: 220,
                       child: ListView.separated(
